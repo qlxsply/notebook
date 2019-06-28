@@ -11,10 +11,10 @@ socket = /tmp/mysql.sock
 [mysqld]
 character_set_server=utf8
 init_connect='SET NAMES utf8'
-basedir=/home/avalon/Documents/mysql
-datadir=/home/avalon/Documents/mysql/data
+basedir=/home/avalon/mysql
+datadir=/home/avalon/mysql/data
 socket=/tmp/mysql.sock
-log-error=/home/avalon/Documents/mysql/log/mysql.log
+log-error=/home/avalon/mysql/log/mysql.log
 lower_case_table_names = 1
 
 sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
@@ -22,12 +22,13 @@ max_connections=5000
 default-time_zone = '+8:00'
 
 2.初始化
-./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/Documents/mysql --datadir=/home/avalon/Documents/mysql/data
+./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/mysql --datadir=/home/avalon/mysql/data
 
 3.随机密码
+o;+1nC&Rm!aM
 
 4.启动服务
-nohup ./bin/mysqld --defaults-file=./my.cnf --user=avalon >/dev/null 2>&1 &
+./bin/mysqld --defaults-file=./my.cnf --user=avalon >/dev/null 2>&1 &
 //指定用户表明生成的数据访问权限
 
 nohup 用于后台启动程序
@@ -59,4 +60,5 @@ create user avalon@192.168.1.3 identified by  'asdfasdf';
 grant <privileges> on <databasename>.<tablename> to <username>@<host> with grant option;
 revoke privilege on databasename.tablename from 'username'@'host';
 例如：grant all on *.* to avalon@192.168.1.3;
+grant all on *.* to avalon@'%';
 set password for 'username'@'host' = password('newpassword'); 

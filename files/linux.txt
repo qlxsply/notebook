@@ -1,0 +1,8 @@
+停止firewall
+systemctl stop firewalld.service
+
+禁止firewall
+systemctl disable firewalld.service
+
+查看firewall
+systemctl status firewalld.service
