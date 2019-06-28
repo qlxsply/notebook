@@ -1,8 +1,36 @@
-停止firewall
-systemctl stop firewalld.service
+tomcat管理员用户：
+	<role rolename="manager"/>    
+	<role rolename="manager-gui"/>    
+	<role rolename="admin"/>    
+	<role rolename="admin-gui"/>    
+	<role rolename="manager-script"/>    
+	<role rolename="manager-jmx"/>    
+	<role rolename="manager-status"/>    
+	<user username="avalon" password="asdfasdf" roles="admin-gui,admin,manager-gui,manager,manager-script,manager-jmx,manager-status"/> 
 
-禁止firewall
-systemctl disable firewalld.service
+/home/avalon/tomcat/webapps/manager/META-INF 修改文件 context.xml
+	allow="^.*$"
 
-查看firewall
-systemctl status firewalld.service
+centos防火墙：
+	启动：
+		systemctl start  firewalld
+	停止：
+		systemctl stop firewalld
+	状态：
+		systemctl status firewalld
+	禁用：
+		systemctl disable firewalld
+
+宝塔安装：
+yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh
+
+export JAVA_HOME=/home/avalon/jdk
+export PATH=$JAVA_HOME/bin:$PATH 
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar 
+
+https://www.bt.cn/btcode.html
+
+
+
+
+
