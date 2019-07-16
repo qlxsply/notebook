@@ -25,10 +25,11 @@ default-time_zone = '+8:00'
 ./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/mysql --datadir=/home/avalon/mysql/data
 
 3.随机密码
-h/(g+OHIQ9NU
+Z;3p,Yj&i#Hd
 
 4.启动服务
 ./bin/mysqld --defaults-file=./my.cnf --user=avalon >/dev/null 2>&1 &
+/home/avalon/mysql/bin/mysqld --defaults-file=/home/avalon/mysql/my.cnf --user=avalon >/dev/null 2>&1 &
 //指定用户表明生成的数据访问权限
 
 nohup 用于后台启动程序

@@ -1,0 +1,5 @@
+#!/bin/expect
+spawn /home/avalon/mysql/bin/mysqladmin -u avalon -p shutdown
+expect "Enter password:"
+send "asdfasdf\n"
+interact

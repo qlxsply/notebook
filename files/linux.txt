@@ -20,6 +20,9 @@ centos防火墙：
 		systemctl status firewalld
 	禁用：
 		systemctl disable firewalld
+		
+查看DNS信息：
+	cat /etc/resolv.conf
 
 宝塔安装：
 yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh
@@ -29,6 +32,16 @@ export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar 
 
 https://www.bt.cn/btcode.html
+
+linux开机脚本
+1.centos系统可通过/etc/rc.d/rc.local执行开机脚本和命令
+
+2.修改/etc/rc.d/rc.local权限 chmod +x /etc/rc.d/rc.local
+
+3.vim /etc/rc.d/rc.local
+末尾添加 sh /home/avalon/bash/mysql-start.sh & //其中&表示后台运行
+
+4.注意，启动时执行的脚本必须以exit 0结尾，表示程序正常执行完成并退出
 
 
 
