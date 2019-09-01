@@ -30,3 +30,15 @@ sudo apt-get install google-chrome-stable
 /usr/bin/google-chrome-stable
 ```
 
+## 2.Windows10与Ubuntu18.04双系统时间不一样问题
+```shell
+timedatectl set-local-rtc 1 --adjust-system-clock
+```
+
+## 3.Ubuntu中IDEA的Ctrl+Alt+left/right失效问题
+
+```shell
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "[]"
+```
+
