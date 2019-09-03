@@ -42,3 +42,9 @@ gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "[]"
 gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "[]"
 ```
 
+## 4.Ubuntu下ls: 无法访问.gvfs: 权限不够问题
+
+```shell
+sudo umount .gvfs 
+sudo rm -rf .gvfs 
+```
