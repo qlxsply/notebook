@@ -11,21 +11,25 @@ socket = /tmp/mysql.sock
 [mysqld]
 character_set_server=utf8
 init_connect='SET NAMES utf8'
-basedir=/home/avalon/mysql
-datadir=/home/avalon/mysql/data
+basedir=/home/avalon/Documents/programs/mysql
+datadir=/home/avalon/Documents/programs/mysql/data
 socket=/tmp/mysql.sock
-log-error=/home/avalon/mysql/log/mysql.log
+log-error=/home/avalon/Documents/programs/mysql/log/mysql.log
 lower_case_table_names = 1
+
+log_bin=mysql_bin
+binlog-format=Row
+server-id=1
 
 sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 max_connections=5000
 default-time_zone = '+8:00'
 
 2.初始化
-./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/mysql --datadir=/home/avalon/mysql/data
+./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/Documents/programs/mysql --datadir=/home/avalon/Documents/programs/mysql/data
 
 3.随机密码
-Z;3p,Yj&i#Hd
+;fTEQq=zL0jg
 
 4.启动服务
 ./bin/mysqld --defaults-file=./my.cnf --user=avalon >/dev/null 2>&1 &
@@ -57,9 +61,14 @@ use <数据库名>;
 
 8.用户
 DROP USER 'username'@'host';//%表示任意地址
-create user avalon@192.168.1.3 identified by  'asdfasdf';
+create user avalon@'%' identified by  'asdfasdf';
 grant <privileges> on <databasename>.<tablename> to <username>@<host> with grant option;
 revoke privilege on databasename.tablename from 'username'@'host';
 例如：grant all on *.* to avalon@192.168.1.3;
 grant all on *.* to avalon@'%';
-set password for 'username'@'host' = password('newpassword'); 
+set password for 'username'@'host' = password('newpassword');
+
+9.执行expect脚本之前需要现在expect解释器
+
+
+ 
