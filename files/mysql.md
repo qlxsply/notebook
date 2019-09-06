@@ -38,7 +38,6 @@ sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync�
 大多数情况下，对数据的一致性并没有很严格的要求，所以并不会把 sync_binlog 配置成 1. 为了追求高并发，提升性能，可以设置为 100 或直接用 0.
 而和 innodb_flush_log_at_trx_commit 一样，对于支付服务这样的应用，还是比较推荐 sync_binlog = 1.
 ```
-
  
 
 [mysqld]
@@ -75,3 +74,15 @@ mysql> FLUSH TABLES WITH READ LOCK;
 mysqldump -uroot -p mydb > /tmp/mydb.sql
 
 [MySQL](http://lib.csdn.net/base/14)> UNLOCK TABLES;
+
+```
+max-connections = 320：设置Mysql的最大连接数；如果实际应用中，并发的连接数量比较大，可以适当的调高此参数，但是，也不是说越高越好，因为这牵涉到服务器的机器硬件的性能。
+```
+
+```
+query_cache_type = 1：设置缓存的类型，有以下几种设置方法：
+
+设置成0，表示禁用缓存；设置成1，表示缓存所有结果；设置成2，表示只缓存在select语句中通过SQL_CACHE指定需要缓存的查询；
+```
+
+

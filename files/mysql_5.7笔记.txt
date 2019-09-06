@@ -4,18 +4,44 @@ mysql版本：mysql-5.7.26
 1.配置文件
 vim ./my.cnf
 #复制以下内容
+
+#####-----------------------------配置文件start-------------------------------------
 [client]
-port = 3306
-socket = /tmp/mysql.sock
+port=3306
+socket=/tmp/mysql.sock
 
 [mysqld]
 character_set_server=utf8
 init_connect='SET NAMES utf8'
-basedir=/home/avalon/Documents/programs/mysql
-datadir=/home/avalon/Documents/programs/mysql/data
+basedir=/home/avalon/mysql
+datadir=/home/avalon/mysql/data
 socket=/tmp/mysql.sock
-log-error=/home/avalon/Documents/programs/mysql/log/mysql.log
-lower_case_table_names = 1
+pid-file=/home/avalon/mysql/mysql.pid
+log-error=/home/avalon/mysql/log/mysql.log
+#慢查询日志
+slow_query_log_file=/home/avalon/mysql/log/mysql-slow.log
+slow_query_log = 1
+#慢查询时间 超过1秒则为慢查询
+long_query_time = 1 
+#不区分大小写
+lower_case_table_names=1
+#绑定地址
+bind-address=0.0.0.0
+#0表示禁用缓存
+query_cache_type=0
+#设置Mysql的最大连接数
+max-connections=100
+#默认存储引擎
+default-storage-engine = InnoDB
+#当每进行1次事务提交之后，将数据写入磁盘。
+sync_binlog=1
+#当设为默认值1的时候，每次提交事务的时候，都会将log buffer刷写到日志。
+innodb_flush_log_at_trx_commit=1
+innodb_log_buffer_size = 2M
+innodb_log_file_size = 32M
+innodb_log_files_in_group = 3
+innodb_max_dirty_pages_pct = 90
+innodb_lock_wait_timeout = 120
 
 log_bin=mysql_bin
 binlog-format=Row
@@ -24,6 +50,8 @@ server-id=1
 sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 max_connections=5000
 default-time_zone = '+8:00'
+#####-----------------------------配置文件  end-------------------------------------
+
 
 2.初始化
 ./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/Documents/programs/mysql --datadir=/home/avalon/Documents/programs/mysql/data
