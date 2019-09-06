@@ -39,3 +39,39 @@ sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync�
 而和 innodb_flush_log_at_trx_commit 一样，对于支付服务这样的应用，还是比较推荐 sync_binlog = 1.
 ```
 
+ 
+
+[mysqld]
+server-id=11
+binlog-ignore-db=test #不记录binlog
+replicate-ignore-db=test #不复制test库的binlog
+log-bin=mysql-bin
+binlog_cache_size = 1M
+binlog_format=mixed
+expire_logs_days=3
+
+**2.修改slave配置文件并重启服务：**
+[mysqld]
+server-id=22
+binlog-do-db = mydb
+binlog-ignore-db=test #不记录binlog
+replicate-ignore-db=test #不复制test库的binlog
+log-bin=mysql-bin
+binlog_cache_size = 1M
+binlog_format=mixed
+expire_logs_days=3
+
+
+
+**3.在master上建立用于复制的用户**
+mysql>grant replication slave, replication client on *.* to 'repl'@'192.168.247.130' identified by 'pwd';
+
+
+
+mysql> FLUSH TABLES WITH READ LOCK;
+
+开始备份数据库
+
+mysqldump -uroot -p mydb > /tmp/mydb.sql
+
+[MySQL](http://lib.csdn.net/base/14)> UNLOCK TABLES;
