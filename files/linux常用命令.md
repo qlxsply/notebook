@@ -99,9 +99,9 @@ Mandatory arguments to long options are mandatory for short options too.
 ## ps命令
 
 	查看服务器进程信息
-
+	
 	-e 列出全部进程
-
+	
 	-f 显示全部的列
 
 ```
@@ -157,7 +157,7 @@ p			按照CPU的使用率由高到低排列
 ## du命令
 
 	查看目录的大小（disk usage）
-
+	
 	-s, --summarize       display only a total for each argument
 	-h, --human-readable  print sizes in human readable format (e.g., 1K 234M 2G)
 ## find命令
@@ -182,12 +182,17 @@ p			按照CPU的使用率由高到低排列
 ```
 
 	-name，按照文档名称进行搜索（支持模糊搜索）
-
+	
 	-type，根据文件类型进行搜索
 
 ## service命令
 
 	用于控制服务的启动、停止、重启
+	service httpd start
 
-service httpd start
+## groups命令
+
+```
+用于查看当前用户所属的用户组列表
+```
 
