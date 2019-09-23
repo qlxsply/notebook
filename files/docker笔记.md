@@ -119,8 +119,6 @@ docker images -a
 docker rmi <image ID>
 ```
 
-
-
 #### 5.导入导出镜像
 
 ```shell
@@ -129,6 +127,35 @@ docker save -o ubuntu_14.04.tar ubuntu:14.04
 #导入镜像到本地镜像库
 docker load --input ubuntu_14.04.tar或者
 docker load < ubuntu_14.04.tar
+```
+
+#### 6.创建镜像
+
+```shell
+docker build 命令用于使用 Dockerfile 创建镜像。
+docker build [OPTIONS] PATH | URL | -
+OPTIONS说明：
+--build-arg=[] :设置镜像创建时的变量；
+--cpu-shares :设置 cpu 使用权重；
+--cpu-period :限制 CPU CFS周期；
+--cpu-quota :限制 CPU CFS配额；
+--cpuset-cpus :指定使用的CPU id；
+--cpuset-mems :指定使用的内存 id；
+--disable-content-trust :忽略校验，默认开启；
+-f :指定要使用的Dockerfile路径；
+--force-rm :设置镜像过程中删除中间容器；
+--isolation :使用容器隔离技术；
+--label=[] :设置镜像使用的元数据；
+-m :设置内存最大值；
+--memory-swap :设置Swap的最大值为内存+swap，"-1"表示不限swap；
+--no-cache :创建镜像的过程不使用缓存；
+--pull :尝试去更新镜像的新版本；
+--quiet, -q :安静模式，成功后只输出镜像 ID；
+--rm :设置镜像成功后删除中间容器；
+--shm-size :设置/dev/shm的大小，默认值是64M；
+--ulimit :Ulimit配置。
+--tag, -t: 镜像的名字及标签，通常 name:tag 或者 name 格式；可以在一次构建中为一个镜像设置多个标签。
+--network: 默认 default。在构建期间设置RUN指令的网络模式
 ```
 
 ### 容器
@@ -141,6 +168,7 @@ docker load < ubuntu_14.04.tar
 ```shell
 #列出本机所有容器
 docker ps -a
+# -a 显示全部容器，不加该选项则仅显示正在运行的容器
 ```
 
 #### 2.创建容器
@@ -153,11 +181,14 @@ docker run -i -t REPOSITORY:TAG
 -d	以守护态（daemonized）形式运行
 ```
 
-#### 3.容器管理
+#### 3.容器起动、停止、重启
 
 ```shell
 #开启/停止/重启container
 docker start/stop/restart <container> 
+docker start [OPTIONS] CONTAINER [CONTAINER...]
+docker stop [OPTIONS] CONTAINER [CONTAINER...]
+docker restart [OPTIONS] CONTAINER [CONTAINER...]
 ```
 
 #### 4.进入容器
@@ -183,6 +214,32 @@ docker ps -a -q | xargs docker rm
 ```shell
 #将一个container固化为一个新的image，后面的repo:tag可选。
 docker commit <container> [repo:tag] 
+```
+
+#### 7.运行容器
+
+```shell
+docker run ：创建一个新的容器并运行一个命令
+命令：
+	docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+-a stdin: 指定标准输入输出内容类型，可选 STDIN/STDOUT/STDERR 三项；
+-d: 后台运行容器，并返回容器ID；
+-i: 以交互模式运行容器，通常与 -t 同时使用；
+-P: 随机端口映射，容器内部端口随机映射到主机的高端口
+-p: 指定端口映射，格式为：主机(宿主)端口:容器端口
+-t: 为容器重新分配一个伪输入终端，通常与 -i 同时使用；
+--name="nginx-lb": 为容器指定一个名称；
+--dns 8.8.8.8: 指定容器使用的DNS服务器，默认和宿主一致；
+--dns-search example.com: 指定容器DNS搜索域名，默认和宿主一致；
+-h "mars": 指定容器的hostname；
+-e username="ritchie": 设置环境变量；
+--env-file=[]: 从指定文件读入环境变量；
+--cpuset="0-2" or --cpuset="0,1,2": 绑定容器到指定CPU运行；
+-m :设置容器使用内存最大值；
+--net="bridge": 指定容器的网络连接类型，支持 bridge/host/none/container: 四种类型；
+--link=[]: 添加链接到另一个容器；
+--expose=[]: 开放一个端口或一组端口；
+--volume , -v: 绑定一个卷
 ```
 
 ## Dockfile
@@ -283,15 +340,17 @@ docker commit <container> [repo:tag]
 	说明：配置当前所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作指令。意思就是，这个镜像创建后，如果其它镜像以这个镜像为基础，会先执行这个镜像的ONBUILD命令。
 ```
 
-## Docker安装MySQL
+## Docker安装应用
 
-### 1.拉取官方镜像
+#### MySQL
+
+##### 1.拉取官方镜像
 
 ```shell
 docker pull mysql:5.7
 ```
 
-### 2.在宿主机创建配置文件与相关文件夹
+##### 2.在宿主机创建配置文件与相关文件夹
 
 ```shell
 例如在/home/mysql/mysql路径下创建
@@ -302,10 +361,11 @@ docker pull mysql:5.7
 |my.cnf
 ```
 
-### 3.启动容器
+##### 3.启动容器
 
 ```shell
 docker run -p 3306:3306 --name mysql -v /home/mysql/mysql:/etc/mysql/conf.d -v /home/mysql/mysql/log:/logs -v /home/mysql/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=asdfasdf -d mysql:5.7
+# --name 表示为容器指定一个名称
 # -p 3306:3306 将容器的3306端口映射到主机的3306端口
 # -v /home/mysql/mysql:/etc/mysql/conf.d 将宿主机当前目录下的/home/mysql/mysql/my.cnf 挂载到容器的/etc/mysql/my.cnf
 # -v /home/mysql/mysql/log:/logs 将宿主机下的/home/mysql/mysql/log目录挂载到容器的/logs
@@ -313,9 +373,11 @@ docker run -p 3306:3306 --name mysql -v /home/mysql/mysql:/etc/mysql/conf.d -v /
 # -e MYSQL_ROOT_PASSWORD=asdfasdf 设置root密码为asdfasdf
 # -d 后台运行容器，并返回容器ID
 # mysql:5.7 镜像名或者镜像ID
+# -i 以交互模式运行容器通常与-t一同使用
+# -t 为容器重新分配一个伪终端，通常与-i同时使用
 ```
 
-### 4.查看启动情况
+##### 4.查看启动情况
 
 ```shell
 [mysql@localhost data]$ docker ps 
@@ -324,15 +386,69 @@ e5f20026e86c        383867b75fd2        "docker-entrypoint.s…"   18 minutes ag
 
 ```
 
-### 5.进入容器
+##### 5.进入容器
 
 ```shell
 #进入容器，后续操作和linux一致
 docker exec -it mysql bash
 ```
 
-### 6.停止容器
+#### Zookeeper
+
+##### 1.拉取镜像
 
 ```shell
-docker stop <容器ID>
+docker pull zookeeper:3.5
 ```
+
+##### 2.配置文件zoo.cfg
+
+```shell
+#数据存放路径
+dataDir=/usr/zookeeper/data
+#日志文件存放路径
+dataLogDir=/usr/zookeeper/log
+#心跳时间间隔，单位毫秒，客户端和服务器或者服务器之间维持心跳，每间隔tickTime时间就会发送一次心跳。
+tickTime=2000
+#客户端连接服务器的端口，默认2181
+clientPort=2181
+#集群中的follower服务器与leader服务器之间初始连接时能容忍的最多心跳数（tickTime的数量）
+initLimit=3
+#集群中的follower服务器与leader服务器之间的请求和应答最多能容忍的心跳数。   
+syncLimit=2
+autopurge.snapRetainCount=3
+autopurge.purgeInterval=0
+maxClientCnxns=60
+standaloneEnabled=true
+admin.enableServer=true
+#server.A=B:C:D 其中A是一个数字，表示这个是第几号服务器；B是这个服务器的ip地址；C表示的是这个服务器与集群中的Leader服务器交换信息的端口；D表示的是万一集群中的Leader服务器挂了，需要一个端口来重新进行选举，选出一个新的Leader，而这个端口就是用来执行选举时服务器相互通信的端口。
+server.1=192.168.50.201:2888:3888
+server.2=192.168.50.202:2888:3888
+server.3=192.168.50.203:2888:3888
+```
+
+##### 3.启动容器
+
+```shell
+docker run -p 2181:2181 --name zookeeper --net host --restart always -v /home/docker/zookeeper/data:/usr/zookeeper/data -v /home/docker/zookeeper/log:/usr/zookeeper/log -v /home/docker/zookeeper/conf/zoo.cfg:/conf/zoo.cfg -e ZOO_MY_ID=1 -d zookeeper:3.5
+```
+
+##### 4.进入容器
+
+```shell
+#进入容器，后续操作和linux一致
+docker exec -it zookeeper bash
+```
+
+##### 5.问题
+
+```shell
+1.Caused by: java.lang.IllegalArgumentException: myid file is missing
+	原因：zk集群中的节点需要获取myid文件内容来标识该节点，缺失则无法启动
+	解决：在zk数据文件存放目录下（通过zoo.cfg文件指定dataDir），创建myid文件并写入一个数字用来标识本节点（类似这个节点的身份证）。
+2.java.net.NoRouteToHostException: No route to host (Host unreachable)
+	原因：防火墙未关闭
+	解决：sudo systemctl stop firewalld.service
+		 sudo systemctl disable firewalld.service
+```
+
