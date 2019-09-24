@@ -452,3 +452,15 @@ docker exec -it zookeeper bash
 		 sudo systemctl disable firewalld.service
 ```
 
+#### Fabric
+
+##### 1.安装fabric-ca
+
+```shell
+1.安装Go环境
+sudo vim /etc/profile
+export GOROOT=/home/docker/go
+export PATH=$PATH:$GOROOT/bin
+source /etc/profile
+```
+

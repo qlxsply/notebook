@@ -27,7 +27,7 @@ centos防火墙：
 宝塔安装：
 yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh
 
-export JAVA_HOME=/home/avalon/jdk
+export JAVA_HOME=/home/docker/jdk1.8.0_151
 export PATH=$JAVA_HOME/bin:$PATH 
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
