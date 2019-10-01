@@ -171,7 +171,7 @@ docker ps -a
 # -a 显示全部容器，不加该选项则仅显示正在运行的容器
 ```
 
-#### 2.创建容器
+#### 2.运行容器
 
 ```shell
 docker run -i -t REPOSITORY:TAG
@@ -355,7 +355,7 @@ docker pull mysql:5.7
 ```shell
 例如在/home/mysql/mysql路径下创建
 |data
-|log
+|logs
 	|---mysql.log
 	|---mysql-slow.log
 |my.cnf
@@ -364,7 +364,7 @@ docker pull mysql:5.7
 ##### 3.启动容器
 
 ```shell
-docker run -p 3306:3306 --name mysql -v /home/mysql/mysql:/etc/mysql/conf.d -v /home/mysql/mysql/log:/logs -v /home/mysql/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=asdfasdf -d mysql:5.7
+docker run -p 3306:3306 --name mysql -v /home/docker/mysql:/etc/mysql/conf.d -v /home/docker/mysql/logs:/logs -v /home/docker/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=asdfasdf -d mysql:5.7
 # --name 表示为容器指定一个名称
 # -p 3306:3306 将容器的3306端口映射到主机的3306端口
 # -v /home/mysql/mysql:/etc/mysql/conf.d 将宿主机当前目录下的/home/mysql/mysql/my.cnf 挂载到容器的/etc/mysql/my.cnf
@@ -391,6 +391,127 @@ e5f20026e86c        383867b75fd2        "docker-entrypoint.s…"   18 minutes ag
 ```shell
 #进入容器，后续操作和linux一致
 docker exec -it mysql bash
+```
+
+##### 6.自制镜像
+
+```shell
+按照该配置，容器启动后会关闭，待解决
+#-----------------------------------------Dockerfile文件---------------------------------------
+#基础镜像
+FROM centos:6.6
+#签名
+MAINTAINER avalon<rsjhshyzns@163.com>
+RUN yum -y install numactl libaio
+#拷贝并解压mysql
+ADD mysql-5.7.26-linux-glibc2.12-x86_64.tar.gz /usr/local
+#定义环境变量
+ENV WORK_HOME /usr/local/mysql-5.7.26-linux-glibc2.12-x86_64
+#设置进入容器后的主目录
+WORKDIR $WORK_HOME
+#创建容器卷
+VOLUME $WORK_HOME/data
+VOLUME $WORK_HOME/log
+#复制文件
+COPY my.cnf $WORK_HOME/my.cnf
+COPY setup.sh $WORK_HOME/setup.sh
+COPY init.sql $WORK_HOME/init.sql
+#增加mysql的bin目录的环境变量
+ENV PATH $PATH:$WORK_HOME/bin
+EXPOSE 3306 33060
+ENTRYPOINT ["sh", "/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/setup.sh"]
+#-----------------------------------------Dockerfile文件---------------------------------------
+
+#-----------------------------------------setup.sh文件-----------------------------------------
+#mysql启动脚本，每次开启容器时运行
+#-----------------------------------------setup.sh文件-----------------------------------------
+#!/bin/bash
+date=`date '+%F %T'`
+echo "当前时间:"${date}
+pid=$(ps -ef | grep mysqld | grep -v grep | awk '{print $2}')
+if [ $pid ];then
+    echo "MySQL已启动，进程:"${pid}
+else
+    echo "MySQL未启动，准备启动..."
+    mysqld --initialize --user=root --basedir=$WORK_HOME --datadir=$WORK_HOME/data
+    mysqld --defaults-file=$WORK_HOME/my.cnf --user=root >/dev/null 2>&1 &
+    sleep 3
+    pid2=$(ps -ef | grep mysqld | grep -v grep | awk '{print $2}')
+    if [ ${pid2} ];then
+        echo "MySQL启动成功，进程:"${pid2}
+        mysql < $WORK_HOME/init.sql
+        exit 0
+    else
+        echo "MySQL启动失败！"
+    fi
+fi
+exit 0
+
+#-----------------------------------------init.sql文件-----------------------------------------
+#用于修改root密码的sql脚本
+#-----------------------------------------init.sql文件-----------------------------------------
+use mysql;
+update user set authentication_string = password('asdfasdf') where user='root';
+flush privileges;
+
+#-----------------------------------------my.cnf文件-------------------------------------------
+#mysql配置文件
+#-----------------------------------------my.cnf文件-------------------------------------------
+[client]
+port=3306
+socket=/tmp/mysql.sock
+
+[mysqld]
+skip-grant-tables
+character_set_server=utf8mb4
+collation_server=utf8mb4_general_ci
+init_connect='SET NAMES utf8mb4'
+basedir=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64
+datadir=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/data
+socket=/tmp/mysql.sock
+pid-file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql.pid
+log-error=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/error.log
+#慢查询日志
+slow_query_log = 1
+slow_query_log_file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql-slow.log
+#一般查询存储路径
+general_log = 1
+general_log_file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql.log
+#慢查询时间 超过1秒则为慢查询
+long_query_time = 1 
+#不区分大小写
+lower_case_table_names=1
+#绑定地址
+bind-address=0.0.0.0
+#0表示禁用缓存
+query_cache_type=0
+#设置Mysql的最大连接数
+max-connections=100
+#默认存储引擎
+default-storage-engine = InnoDB
+#当每进行1次事务提交之后，将数据写入磁盘。
+sync_binlog=1
+#当设为默认值1的时候，每次提交事务的时候，都会将log buffer刷写到日志。
+innodb_flush_log_at_trx_commit=1
+innodb_log_buffer_size = 2M
+innodb_log_file_size = 32M
+innodb_log_files_in_group = 3
+innodb_max_dirty_pages_pct = 90
+innodb_lock_wait_timeout = 120
+
+log_bin=mysql_bin
+binlog-format=Row
+server-id=1
+
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+max_connections=5000
+default-time_zone = '+8:00'
+
+#-----------------------------------------启动容器-------------------------------------------
+#启动容器
+#-----------------------------------------启动容器-------------------------------------------
+docker build -f ./Dockerfile -t db:1.0 .
+docker run -p 3306:3306 --name mysql -v /home/docker/mysql/logs:/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log -v /home/docker/mysql/data:/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/data -d db:1.0
 ```
 
 #### Zookeeper
