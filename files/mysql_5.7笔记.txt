@@ -11,16 +11,20 @@ port=3306
 socket=/tmp/mysql.sock
 
 [mysqld]
-character_set_server=utf8
-init_connect='SET NAMES utf8'
-basedir=/home/avalon/mysql
-datadir=/home/avalon/mysql/data
+character_set_server=utf8mb4
+collation_server=utf8mb4_general_ci
+init_connect='SET NAMES utf8mb4'
+basedir=/home/docker/mysql
+datadir=/home/docker/mysql/data
 socket=/tmp/mysql.sock
-pid-file=/home/avalon/mysql/mysql.pid
-log-error=/home/avalon/mysql/log/mysql.log
+pid-file=/home/docker/mysql/mysql.pid
+log-error=/home/docker/mysql/logs/error.log
 #慢查询日志
-slow_query_log_file=/home/avalon/mysql/log/mysql-slow.log
 slow_query_log = 1
+slow_query_log_file=/home/docker/mysql/logs/mysql-slow.log
+#一般查询存储路径
+general_log = 1
+general_log_file=/home/docker/mysql/logs/mysql.log
 #慢查询时间 超过1秒则为慢查询
 long_query_time = 1 
 #不区分大小写
@@ -54,14 +58,13 @@ default-time_zone = '+8:00'
 
 
 2.初始化
-./bin/mysqld --initialize --user=avalon --basedir=/home/avalon/Documents/programs/mysql --datadir=/home/avalon/Documents/programs/mysql/data
+/home/docker/mysql/bin/mysqld --initialize --user=docker --basedir=/home/docker/mysql --datadir=/home/docker/mysql/data
 
 3.随机密码
-;fTEQq=zL0jg
+;av8TXHwA;dd
 
 4.启动服务
-./bin/mysqld --defaults-file=./my.cnf --user=avalon >/dev/null 2>&1 &
-/home/avalon/mysql/bin/mysqld --defaults-file=/home/avalon/mysql/my.cnf --user=avalon >/dev/null 2>&1 &
+/home/docker/mysql/bin/mysqld --defaults-file=/home/docker/mysql/my.cnf --user=docker >/dev/null 2>&1 &
 //指定用户表明生成的数据访问权限
 
 nohup 用于后台启动程序
@@ -77,11 +80,10 @@ linux在执行shell命令之前，就会确定好所有的输入输出位置，�
 ./mysqladmin -u avalon -p shutdown
 
 5.登录
-./mysql -u root -p
+/home/docker/mysql/bin/mysql -u root -p
 
 6.修改密码
 alter user user() identified by "asdfasdf";
-update user set authentication_string = password("asdfasdf") where user = "mysql.session";
 
 7.操作数据库
 create database <数据库名>;
@@ -95,6 +97,7 @@ revoke privilege on databasename.tablename from 'username'@'host';
 例如：grant all on *.* to avalon@192.168.1.3;
 grant all on *.* to avalon@'%';
 set password for 'username'@'host' = password('newpassword');
+flush privileges;
 
 9.执行expect脚本之前需要现在expect解释器
 
