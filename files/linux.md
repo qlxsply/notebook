@@ -34,7 +34,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 ```
 
-## 脚本
+## 开机脚本
 
 ```shell
 1.centos系统可通过/etc/rc.d/rc.local执行开机脚本和命令
@@ -60,6 +60,14 @@ export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
 /home/avalon/tomcat/webapps/manager/META-INF 修改文件 context.xml 
 allow="^.*$"
+```
+
+## 常用软件
+
+### rz  sz
+
+```shell
+sudo yum -y install lrzsz
 ```
 
 ## 常见命令

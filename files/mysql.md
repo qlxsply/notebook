@@ -43,7 +43,6 @@ sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync�
 而和 innodb_flush_log_at_trx_commit 一样，对于支付服务这样的应用，还是比较推荐 sync_binlog = 1.
 ```
 
-
 [mysqld]
 server-id=11
 binlog-ignore-db=test #不记录binlog

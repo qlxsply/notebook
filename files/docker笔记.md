@@ -43,7 +43,10 @@ sudo yum -y install docker-ce
 #### 7.启动docker服务
 
 ```shell
+#启动docker服务
 sudo systemctl start docker
+#设置开机启动docker
+sudo systemctl enable docker.service
 ```
 
 #### 8.测试
@@ -110,6 +113,8 @@ docker pull <image>
 docker images
 #列出所有的images（包含历史）
 docker images -a 
+#查看镜像元数据
+docker inspect mysql:5.7
 ```
 
 #### 4.删除镜像
@@ -242,6 +247,18 @@ docker run ：创建一个新的容器并运行一个命令
 --volume , -v: 绑定一个卷
 ```
 
+#### 8.查看日志
+
+``` shell
+docker logs [OPTIONS] CONTAINER
+#OPTIONS说明：
+#-f : 跟踪日志输出
+#--since :显示某个开始时间的所有日志
+#-t : 显示时间戳
+#--tail :仅列出最新N条容器日志
+docker logs --since="2019-11-01" --tail=20 mysql
+```
+
 ## Dockfile
 
 ```shell
@@ -353,7 +370,7 @@ docker pull mysql:5.7
 ##### 2.在宿主机创建配置文件与相关文件夹
 
 ```shell
-例如在/home/mysql/mysql路径下创建
+例如在/home/docker/mysql路径下创建
 |data
 |logs
 	|---mysql.log
@@ -375,6 +392,59 @@ docker run -p 3306:3306 --name mysql -v /home/docker/mysql:/etc/mysql/conf.d -v 
 # mysql:5.7 镜像名或者镜像ID
 # -i 以交互模式运行容器通常与-t一同使用
 # -t 为容器重新分配一个伪终端，通常与-i同时使用
+#----------------------------------------------配置文件-------------------------------------
+[client]
+port=3306
+socket=/tmp/mysql.sock
+
+[mysqld]
+skip-grant-tables
+character_set_server=utf8mb4
+collation_server=utf8mb4_general_ci
+init_connect='SET NAMES utf8mb4'
+#basedir=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64
+#datadir=/var/lib/mysql
+socket=/tmp/mysql.sock
+#pid-file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql.pid
+#log-error=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/error.log
+#language=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/share/english
+#慢查询日志
+slow_query_log = 1
+#slow_query_log_file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql-slow.log
+#一般查询存储路径
+general_log = 1
+#general_log_file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql.log
+#慢查询时间 超过1秒则为慢查询
+long_query_time = 1 
+#不区分大小写
+lower_case_table_names=1
+#绑定地址
+bind-address=0.0.0.0
+#0表示禁用缓存
+query_cache_type=0
+#设置Mysql的最大连接数
+max-connections=100
+#默认存储引擎
+default-storage-engine = InnoDB
+#当每进行1次事务提交之后，将数据写入磁盘。
+sync_binlog=1
+#当设为默认值1的时候，每次提交事务的时候，都会将log buffer刷写到日志。
+innodb_flush_log_at_trx_commit=1
+innodb_log_buffer_size = 2M
+innodb_log_file_size = 32M
+innodb_log_files_in_group = 3
+innodb_max_dirty_pages_pct = 90
+innodb_lock_wait_timeout = 120
+#timestamp为null的时候，可能会报错
+explicit_defaults_for_timestamp=true
+
+log_bin=mysql_bin
+binlog-format=Row
+server-id=1
+
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+max_connections=5000
+default-time_zone = '+8:00'
 ```
 
 ##### 4.查看启动情况
@@ -471,6 +541,7 @@ datadir=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/data
 socket=/tmp/mysql.sock
 pid-file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql.pid
 log-error=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/error.log
+language=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/share/english
 #慢查询日志
 slow_query_log = 1
 slow_query_log_file=/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log/mysql-slow.log
@@ -498,6 +569,8 @@ innodb_log_file_size = 32M
 innodb_log_files_in_group = 3
 innodb_max_dirty_pages_pct = 90
 innodb_lock_wait_timeout = 120
+#timestamp为null的时候，可能会报错
+explicit_defaults_for_timestamp=true
 
 log_bin=mysql_bin
 binlog-format=Row
