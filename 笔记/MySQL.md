@@ -8,13 +8,15 @@ socket=/tmp/mysql.sock
 [mysqld]
 port=3306
 socket=/tmp/mysql.sock
+language=/home/avalon/mysql/share/english
 basedir=/home/avalon/mysql
 datadir=/home/avalon/mysql/data
 pid_file=/home/avalon/mysql/mysql.pid
 bind_address=0.0.0.0
 character_set_server=utf8mb4
-collation_server=utf8mb4-general-ci
+collation_server=utf8mb4_unicode_ci
 init_connect='set names utf8mb4'
+skip-character-set-client-handshake=true
 #-----------------------------------------日志设置-----------------------------------------
 #错误日志
 log_error=/home/avalon/mysql/logs/error.log
@@ -83,8 +85,8 @@ max_binlog_cache_size=16M
 default-storage-engine=InnoDB
 #InnoDB引擎缓存池，缓存索引、数据页、自适应哈希索引、插入缓存、锁、内部数据结构
 innodb_buffer_pool_size=1024M
-#额外内存
-innodb_additional_mem_pool=16M
+#额外内存 5.7之后移除
+#innodb_additional_mem_pool_size=16M
 #ib_logfile（ redo log和undo log）刷新方式，取值:0/1/2
 #	0：表示每秒把log buffer刷到文件系统中(os buffer)去，并且调用文件系统的"flush"操作将缓存刷新到磁盘上去。也就是说一秒之前的日志都保存在日志缓冲区，也就是内存上，如果机器宕掉，可能丢失1秒的事务数据。
 #	1：表示在每次事务提交的时候，都把log buffer刷到文件系统中(os buffer)去，并且调用文件系统的"flush"操作将缓存刷新到磁盘上去
@@ -94,7 +96,7 @@ innodb_flush_log_at_trx_commit=0
 #	fdatasync：默认，调用fsync()去刷系统缓存数据文件与redo log的buffer
 #	O_DSYNC：写入通过系统缓存，但是直接读取
 #	O_DIRECT：不通过系统缓存，直接读写文件
-innodb_flush_method=fdatasync
+innodb_flush_method=O_DIRECT
 #日志缓存大小
 innodb_log_buffer_size=2M
 #日志文件大小
@@ -104,25 +106,32 @@ innodb_log_files_in_group=2
 #最大脏页比例
 innodb_max_dirty_pages_pct=90
 #最大事物锁等待时间
-innodb_lock_wait_timeout=120
+innodb_lock_wait_timeout=10
 #----------------------------------------mysql主从配置---------------------------------------
 #表示是本机的序号为1,一般来讲就是master的意思
 server_id=1
 #从服务器是否记录relaylog中更新的数据至自身的binlog中
-log_slave_updates=1
+#log_slave_updates=1
 #如果希望从库只读，开启该选项
 #read_only=1
 #主库IP
-master_host=192.168.50.201
+#master_host=192.168.50.201
 #同步数据库的端口号
-master_port=3306
+#master_port=3306
 #具有同步权限的账户
-master_user=forCopy
+#master_user=forCopy
 #对应账号的密码
-master_password=123456
-#是否跳过自动复制
-skip-slave-start=1
-
+#master_password=asdfasdf
+#目标同步binlog文件
+#master_log_file=mysql_bin
+#复制开始位置
+#master_log_pos=120
+#是否跳过自动复制，如果不是出现异常，从库的重启可以关闭该设置
+#skip_slave_start=1
+#指定relay log文件
+#relay_log=slave_relay_bin
+#开启relay恢复
+#relay_log_recovery=1
 ```
 
 ## 安装启动
@@ -130,8 +139,10 @@ skip-slave-start=1
 ### 初始化
 
 ```shell
-#记住随机密码
-/home/avalon/mysql/bin/mysqld --initialize --user=avalon --basedir=/home/avalon/mysql --datadir=/home/avalon/mysql/data
+#mysql5.7初始化
+./bin/mysqld --initialize --user=avalon --basedir=./ --datadir=./data
+#MariaDB初始化，当前在mysql根目录
+./scripts/mysql_install_db --user=avalon --basedir=./ --datadir=./data --skip-name-resolve
 ```
 
 ### 启动服务
@@ -143,19 +154,21 @@ skip-slave-start=1
 #	2>&1	异常输出重定向
 #	&		后台启动
 nohup /home/avalon/mysql/bin/mysqld --user=avalon --defaults-file=/home/avalon/mysql/my.cnf >/dev/null 2>&1 &
-
+#MariaDB服务启动,--defaults-file参数需要在最前面，，当前在mysql根目录
+nohup ./bin/mysqld --defaults-file=./my.cnf --user=avalon --basedir=./ --datadir=./data >./mysql.log 2>&1 &
 ```
 
 ### 停止服务
 
 ```shell
-/home/avalon/mysql/bin//mysqladmin -u avalon -p shutdown
+#该root用户是mysql的root用户
+./bin/mysqladmin -u root -p shutdown
 ```
 
-### 登录
+### 用户登录
 
 ```shell
-/home/avalon/mysql/bin/mysql -u root -p
+./bin/mysql -u root -p
 ```
 
 ### 修改密码
@@ -163,6 +176,10 @@ nohup /home/avalon/mysql/bin/mysqld --user=avalon --defaults-file=/home/avalon/m
 ```shell
 #user() 表示当前登录用户
 alter user user() identified by "asdfasdf";
+##MariaDB(10.2.29)初始化密码
+update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='root';
+#记得更新
+flush privileges;
 ```
 
 ### 创建用户
@@ -181,8 +198,11 @@ create user avalon@'%' identified by 'asdfasdf';
 #	revoke <privileges> on <databasename>.<tablename> to <username>@<host>;
 #例如
 grant all on *.* to avalon@192.168.50.201 with grant option;
-grant all on *.* to avalon@'%' with grant option;
+grant all on *.* to avalon@'%' identified by 'asdfasdf' with grant option;
 set password for avalon@'%' = password('asdfasdf');
+flush privileges;
+update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='avalon';
+revoke super on *.* from avalon@'%';
 flush privileges;
 ```
 
@@ -197,7 +217,7 @@ if [ $pid ];then
     echo "MySQL已启动，进程:"${pid}
 else
     echo "MySQL未启动，准备启动..."
-    /home/avalon/mysql/bin/mysqld --defaults-file=/home/avalon/mysql/my.cnf --user=avalon >/dev/null 2>&1 & 
+    /home/avalon/mysql/bin/mysqld --defaults-file=/home/avalon/mysql/my.cnf --user=avalon --basedir=/home/avalon/mysql/ --datadir=/home/avalon/mysql/data >/dev/null 2>&1 & 
     sleep 1
     pid2=$(ps -ef | grep mysqld | grep -v grep | awk '{print $2}')
     if [ ${pid2} ];then
@@ -214,9 +234,59 @@ exit 0
 
 ```shell
 1.centos系统可通过/etc/rc.d/rc.local执行开机脚本和命令
-2.修改/etc/rc.d/rc.local权限 chmod +x /etc/rc.d/rc.local
-3.vim /etc/rc.d/rc.local
-末尾添加 sh /home/avalon/bash/mysql-start.sh & //其中&表示后台运行
+2.修改/etc/rc.d/rc.local权限 sudo chmod +x /etc/rc.d/rc.local
+3.sudo vim /etc/rc.d/rc.local
+末尾添加 sh /home/avalon/mysql/start.sh & //其中&表示后台运行
 4.注意，启动时执行的脚本必须以exit 0结尾，表示程序正常执行完成并退出
 ```
 
+## 主从备份
+
+### 创建用户
+
+```shell
+mysql> grant replication slave,replication client on *.* to 'forCopy'@'%';
+mysql> update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='forCopy';
+mysql> flush privileges;
+```
+
+### 备份主库
+
+``` shell
+#对主库上所有表加锁，不能执行UPDATA，DELETE，INSERT语句
+mysql> flush tables with read lock;
+#mysqldump进行主库的备份
+#	--master-data=1：默认值，mysqldump出来的文件包括CHANGE MASTER TO这个语句，CHANGE MASTER TO后面紧接着就是file和position的记录，在slave上导入数据时就会执行
+#	--master-data=2：mysqldump出来的文件也包括CHANGE MASTER TO这个语句，但是语句是被注释状态
+#	--all-databases：备份全部表
+[avalon@localhost mysql]$ ./bin/mysqldump --all-databases --flush-logs --master-data=2  -uroot -pasdfasdf  > /home/avalon/backup/backup.sql
+#主库数据备份完毕后，释放锁
+mysql> unlock tables;
+```
+
+### 从库导入
+
+```shell
+#复制文件至从库服务器
+[avalon@localhost mysql]$ scp ../backup/backup.sql avalon@192.168.50.202:/home/avalon/backup/
+#导入备份文件
+mysql> source /home/avalon/backup/backup.sql中的binlog信息设置从库备份设置
+
+```
+
+### 开启备份
+
+```shell
+#查看主库binlog信息，file表示当前日志文件名称，position表示当前日志的位置
+#通过backup.sql中的binlog信息设置从库备份起点，'mysql_bin.000006', MASTER_LOG_POS=385
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.50.201', MASTER_PORT=3306, MASTER_USER='forCopy', MASTER_PASSWORD='asdfasdf', MASTER_LOG_FILE='mysql_bin.000006', MASTER_LOG_POS=385;
+#启动复制进程
+mysql> start slave;
+#查看从库状态
+mysql> SHOW SLAVE STATUS\G
+#如下信息表示从库备份正常，否则存在异常
+#	Slave_IO_Running: Yes
+#	Slave_SQL_Running: Yes
+#停止复制进程
+mysql> stop slave;
+```
