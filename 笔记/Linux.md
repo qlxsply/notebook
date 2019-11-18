@@ -265,3 +265,29 @@ service httpd start
 ```shell
 #用于查看当前用户所属的用户组列表
 ```
+
+### rpm命令
+
+```shell
+rpm -ivh demo.rpm
+#-i 安装包
+#-v 显示正在安装的文件信息
+#-h 显示正在安装的文件信息和安装进度
+rpm -Uvh demo.rpm
+#-U 升级包
+rpm -e demo.rpm
+#-e 卸载包
+rpm -q < rpm package name>
+```
+
+### ln命令
+
+```shell
+#修改软链接 ln –snf [新的源文件或目录] [软链接文件]
+#ln –snf  [新的源文件或目录]   [软链接文件]
+#重新设置linux服务器时区，立刻生效
+sudo ln -snf /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
+#删除软链接
+rm -rf ./软链接名称
+rm -rf ./软链接名称/ (这样就会把软链接以及软链接指向下的内容删除)
+```
