@@ -290,3 +290,141 @@ mysql> SHOW SLAVE STATUS\G
 #停止复制进程
 mysql> stop slave;
 ```
+
+## 读写分离
+
+### Maxscale配置
+
+```shell
+[maxscale]
+#线程数，auto自动与cup核心数一样
+threads=auto
+# timestamp精度
+ms_timestamp=1
+# 开启maxscale日志
+syslog=1
+maxlog=1
+# 不将日志写入到共享缓存
+#log_to_shm=0
+# 记录告警信息
+log_warning=1
+# 记录notice信息
+log_notice=1
+# 记录info信息
+log_info=1
+# 不打开debug模式
+log_debug=0
+# 日志递增
+log_augmentation=1
+# 相关目录
+logdir=/home/avalon/maxscale/logs/
+datadir=/home/avalon/maxscale/data/
+cachedir=/home/avalon/maxscale/cache/
+piddir=/home/avalon/maxscale/tmp/
+
+#mysql服务器设置
+[server1]
+type=server
+address=192.168.50.201
+port=3306
+protocol=MariaDBBackend
+serv_weight=1
+[server2]
+type=server
+address=192.168.50.202
+port=3306
+protocol=MariaDBBackend
+serv_weight=1
+
+#监控信息
+[MariaDB-Monitor]
+type=monitor
+module=mariadbmon
+servers=server1,server2
+user=avalon
+password=asdfasdf
+monitor_interval=2000
+detect_stale_master=true
+
+#只读从库设置
+[Read-Only-Service]
+type=service
+router=readconnroute
+servers=server2
+user=avalon
+password=asdfasdf
+router_options=slave
+enable_root_user=1
+weightby=serv_weight
+
+#可写主库设置
+[Read-Write-Service]
+type=service
+router=readwritesplit
+servers=server1
+user=avalon
+password=asdfasdf
+max_slave_connections=100%
+use_sql_variables_in=master
+# 允许root用户登录执行
+enable_root_user=1
+# 允许主从最大间隔(s)
+max_slave_replication_lag=3600
+
+[MaxAdmin-Service]
+type=service
+router=cli
+
+[Read-Only-Listener]
+type=listener
+service=Read-Only-Service
+protocol=MariaDBClient
+port=4008
+
+[Read-Write-Listener]
+type=listener
+service=Read-Write-Service
+protocol=MariaDBClient
+port=4006
+
+#管理端口
+[MaxAdmin-Listener]
+type=listener
+service=MaxAdmin-Service
+protocol=maxscaled
+#socket和port用于链接maxscale客户端
+socket=/home/avalon/maxscale/tmp/maxscale.sock
+#port=8080 
+```
+
+### 启动服务
+
+``` shell
+#不能在root用户下启动maxscale
+[avalon@localhost tmp]$ /usr/bin/maxscale -f /etc/maxscale.cnf
+#添加linux用户avalon至信任列表
+[avalon@localhost tmp]$ sudo /usr/bin/maxadmin enable account avalon -S /home/avalon/maxscale/tmp/maxscale.sock
+#使用avalon用户登陆客户端
+[avalon@localhost tmp]$ /usr/bin/maxadmin -S /home/avalon/maxscale/tmp/maxscale.sock
+#查看数据库服务器列表
+MaxScale> list servers
+Servers.
+-------------------+-----------------+-------+-------------+--------------------
+Server             | Address         | Port  | Connections | Status              
+-------------------+-----------------+-------+-------------+--------------------
+server1            | 192.168.50.201  |  3306 |           2 | Master, Running
+server2            | 192.168.50.202  |  3306 |           2 | Slave, Running
+-------------------+-----------------+-------+-------------+--------------------
+#查看路由服务列表
+MaxScale> list services
+Services.
+--------------------------+-------------------+--------+----------------+-------------------
+Service Name              | Router Module     | #Users | Total Sessions | Backend databases
+--------------------------+-------------------+--------+----------------+-------------------
+MaxAdmin-Service          | cli               |      1 |              4 | 
+Read-Write-Service        | readwritesplit    |      2 |              3 | server1, server2
+--------------------------+-------------------+--------+----------------+-------------------
+#登陆mysql,将maxscale当作普通mysql服务器使用
+mysql  -uavalon -p -h192.168.50.203 -P4006
+```
+
