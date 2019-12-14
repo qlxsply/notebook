@@ -658,3 +658,18 @@ export PATH=$PATH:$GOROOT/bin
 source /etc/profile
 ```
 
+#### Redis
+
+```shell
+$ docker run -itd --name redis --restart always -p 6379:6379 redis:latest
+# --name 表示为容器指定一个名称
+# -p 6379:6379 将容器的6379端口映射到主机的6379端口
+# -v /home/mysql/mysql/log:/logs 将宿主机下的/home/mysql/mysql/log目录挂载到容器的/logs
+# -d 后台运行容器，并返回容器ID
+# -i 以交互模式运行容器通常与-t一同使用
+# -t 为容器重新分配一个伪终端，通常与-i同时使用
+# redis:latest 镜像名或者镜像ID
+
+docker exec -it redis /bin/bash
+```
+
