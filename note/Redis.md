@@ -1,7 +1,7 @@
 ## 配置文件
-[Redis主节点配置文件](./../config/redis.cnf)
+[Redis主节点配置文件](./../config/redis.conf)
 
-[Redis从节点配置文件](./../config/sentinel.cnf)
+[Redis从节点配置文件](./../config/sentinel.conf)
 
 ## 集群搭建
 
