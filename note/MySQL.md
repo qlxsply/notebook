@@ -259,7 +259,7 @@ mysql> flush tables with read lock;
 #	--master-data=1：默认值，mysqldump出来的文件包括CHANGE MASTER TO这个语句，CHANGE MASTER TO后面紧接着就是file和position的记录，在slave上导入数据时就会执行
 #	--master-data=2：mysqldump出来的文件也包括CHANGE MASTER TO这个语句，但是语句是被注释状态
 #	--all-databases：备份全部表
-[avalon@localhost mysql]$ ./bin/mysqldump --all-databases --flush-logs --master-data=2  -uroot -pasdfasdf  > /home/avalon/backup/backup.sql
+[avalon@localhost mysql]$ ./bin/mysqldump --all-databases --flush-logs --master-data=1  -uroot -pasdfasdf  > /home/avalon/backup/backup.sql
 #主库数据备份完毕后，释放锁
 mysql> unlock tables;
 ```
@@ -426,5 +426,39 @@ Read-Write-Service        | readwritesplit    |      2 |              3 | server
 --------------------------+-------------------+--------+----------------+-------------------
 #登陆mysql,将maxscale当作普通mysql服务器使用
 mysql  -uavalon -p -h192.168.50.203 -P4006
+```
+
+## 常用操作
+
+### 创建数据库
+
+```sql
+create database iris default character set utf8mb4 collate utf8mb4_unicode_ci;
+```
+
+### 创建表
+
+```sql
+CREATE TABLE IF NOT EXISTS `user`(
+   `id` BIGINT UNSIGNED NOT NULL,
+   `name` VARCHAR(32) NOT NULL,
+   `age` INT(3) NOT NULL,
+   `mobile` VARCHAR(16) NOT NULL,
+   PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 collate utf8mb4_unicode_ci;
+```
+
+### 查看表结构
+
+```sql
+MariaDB [iris]> desc user;
++--------+---------------------+------+-----+---------+-------+
+| Field  | Type                | Null | Key | Default | Extra |
++--------+---------------------+------+-----+---------+-------+
+| id     | bigint(20) unsigned | NO   | PRI | NULL    |       |
+| name   | varchar(32)         | NO   |     | NULL    |       |
+| age    | int(3)              | NO   |     | NULL    |       |
+| mobile | varchar(16)         | NO   |     | NULL    |       |
++--------+---------------------+------+-----+---------+-------+
 ```
 

@@ -291,3 +291,25 @@ sudo ln -snf /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
 rm -rf ./软链接名称
 rm -rf ./软链接名称/ (这样就会把软链接以及软链接指向下的内容删除)
 ```
+
+### rsync命令
+
+```shell
+rsync options source destination
+-v : 详细模式输出
+-r : 递归拷贝数据，但是传输数据时不保留时间戳和权限
+-a : 归档模式, 归档模式总是递归拷贝，而且保留符号链接、权限、属主、属组时间戳
+-z : 压缩传输
+-h : human-readable
+--progress： 显示传输过程
+--exclude=PATTERN 指定排除传输的文件模式
+--include=PATTERN 指定需要传输的文件模式
+--delete 同步时，删除那些DST中有，而SRC没有的文件
+--max-size：限定传输文件大小的上限
+--dry-run：显示那些文件将被传输，并不会实际传输
+--bwlimit：限制传输带宽
+-W：拷贝文件，不进行增量检测
+sudo yum -y install rsync
+rsync -zavh ./init.sh  avalon@192.168.50.202:/home/avalon
+```
+
