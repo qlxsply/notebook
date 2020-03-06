@@ -133,7 +133,21 @@ public class SwaggerConfig {
 
 ​	example：参数模板
 
+## 问题
 
+1.Spring的IOC和AOP如何实现
+
+2.动态代理的实现方式
+
+3.Spring如何解决循环依赖（三级缓存）
+
+4.Spring的后置处理器
+
+5.Spring的@Transaction如何实现
+
+6.Spring事务的传播机制
+
+7.BeanFactory和ApplicationContext的联系和区别
 
 ​	
 
