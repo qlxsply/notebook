@@ -199,6 +199,9 @@ create user avalon@'%' identified by 'asdfasdf';
 #例如
 grant all on *.* to avalon@192.168.50.201 with grant option;
 grant all on *.* to avalon@'%' identified by 'asdfasdf' with grant option;
+#
+grant alter,create,delete,drop,index,insert,select,show databases,show view,update,lock tables,references on *.* to solitude@'%' with grant option;
+#
 set password for avalon@'%' = password('asdfasdf');
 flush privileges;
 update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='avalon';
@@ -245,9 +248,18 @@ exit 0
 ### 创建用户
 
 ```shell
-mysql> grant replication slave,replication client on *.* to 'forCopy'@'%';
-mysql> update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='forCopy';
-mysql> flush privileges;
+MariaDB [mysql]> create user justCopy@'%' identified by 'asdfasdf';
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [mysql]> grant replication slave,replication client on *.* to 'justCopy'@'%';
+Query OK, 0 rows affected (0.00 sec)
+
+MariaDB [mysql]> update user set authentication_string=password('asdfasdf'),plugin='mysql_native_password' where user='justCopy';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [mysql]> flush privileges;
+Query OK, 0 rows affected (0.01 sec)
 ```
 
 ### 备份主库
@@ -279,7 +291,7 @@ mysql> source /home/avalon/backup/backup.sql中的binlog信息设置从库备份
 ```shell
 #查看主库binlog信息，file表示当前日志文件名称，position表示当前日志的位置
 #通过backup.sql中的binlog信息设置从库备份起点，'mysql_bin.000006', MASTER_LOG_POS=385
-mysql> CHANGE MASTER TO MASTER_HOST='192.168.50.201', MASTER_PORT=3306, MASTER_USER='forCopy', MASTER_PASSWORD='asdfasdf', MASTER_LOG_FILE='mysql_bin.000006', MASTER_LOG_POS=385;
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.50.201', MASTER_PORT=3306, MASTER_USER='justCopy', MASTER_PASSWORD='asdfasdf', MASTER_LOG_FILE='mysql_bin.000008', MASTER_LOG_POS=385;
 #启动复制进程
 mysql> start slave;
 #查看从库状态
@@ -297,32 +309,21 @@ mysql> stop slave;
 
 ```shell
 [maxscale]
-#线程数，auto自动与cup核心数一样
 threads=auto
-# timestamp精度
 ms_timestamp=1
-# 开启maxscale日志
 syslog=1
 maxlog=1
-# 不将日志写入到共享缓存
-#log_to_shm=0
-# 记录告警信息
 log_warning=1
-# 记录notice信息
 log_notice=1
-# 记录info信息
 log_info=1
-# 不打开debug模式
-log_debug=0
-# 日志递增
+log_debug=1
 log_augmentation=1
-# 相关目录
 logdir=/home/avalon/maxscale/logs/
 datadir=/home/avalon/maxscale/data/
 cachedir=/home/avalon/maxscale/cache/
 piddir=/home/avalon/maxscale/tmp/
 
-#mysql服务器设置
+
 [server1]
 type=server
 address=192.168.50.201
@@ -331,12 +332,12 @@ protocol=MariaDBBackend
 serv_weight=1
 [server2]
 type=server
-address=192.168.50.202
+address=192.168.50.203
 port=3306
 protocol=MariaDBBackend
 serv_weight=1
 
-#监控信息
+
 [MariaDB-Monitor]
 type=monitor
 module=mariadbmon
@@ -346,7 +347,7 @@ password=asdfasdf
 monitor_interval=2000
 detect_stale_master=true
 
-#只读从库设置
+
 [Read-Only-Service]
 type=service
 router=readconnroute
@@ -357,7 +358,7 @@ router_options=slave
 enable_root_user=1
 weightby=serv_weight
 
-#可写主库设置
+
 [Read-Write-Service]
 type=service
 router=readwritesplit
@@ -366,14 +367,14 @@ user=avalon
 password=asdfasdf
 max_slave_connections=100%
 use_sql_variables_in=master
-# 允许root用户登录执行
 enable_root_user=1
-# 允许主从最大间隔(s)
 max_slave_replication_lag=3600
+
 
 [MaxAdmin-Service]
 type=service
 router=cli
+
 
 [Read-Only-Listener]
 type=listener
@@ -381,20 +382,19 @@ service=Read-Only-Service
 protocol=MariaDBClient
 port=4008
 
+
 [Read-Write-Listener]
 type=listener
 service=Read-Write-Service
 protocol=MariaDBClient
 port=4006
 
-#管理端口
+
 [MaxAdmin-Listener]
 type=listener
 service=MaxAdmin-Service
 protocol=maxscaled
-#socket和port用于链接maxscale客户端
 socket=/home/avalon/maxscale/tmp/maxscale.sock
-#port=8080 
 ```
 
 ### 启动服务
@@ -403,7 +403,7 @@ socket=/home/avalon/maxscale/tmp/maxscale.sock
 #不能在root用户下启动maxscale
 [avalon@localhost tmp]$ /usr/bin/maxscale -f /etc/maxscale.cnf
 #添加linux用户avalon至信任列表
-[avalon@localhost tmp]$ sudo /usr/bin/maxadmin enable account avalon -S /home/avalon/maxscale/tmp/maxscale.sock
+[avalon@localhost tmp]$  sudo /usr/bin/maxadmin enable account avalon -S /home/avalon/maxscale/tmp/maxscale.sock
 #使用avalon用户登陆客户端
 [avalon@localhost tmp]$ /usr/bin/maxadmin -S /home/avalon/maxscale/tmp/maxscale.sock
 #查看数据库服务器列表
@@ -426,6 +426,17 @@ Read-Write-Service        | readwritesplit    |      2 |              3 | server
 --------------------------+-------------------+--------+----------------+-------------------
 #登陆mysql,将maxscale当作普通mysql服务器使用
 mysql  -uavalon -p -h192.168.50.203 -P4006
+```
+
+### 自动启动
+
+```shell
+#!/bin/bash
+/usr/bin/maxscale -f /etc/maxscale.cnf
+
+#切换用户执行启动脚本
+sudo vim /etc/rc.d/rc.local
+su - avalon -c 'sh /home/avalon/maxscale/start.sh &'
 ```
 
 ## 常用操作

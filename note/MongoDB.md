@@ -68,6 +68,12 @@ export MONGODB_HOME=/home/avalon/mongodb/bin
 export PATH=$MONGODB_HOME:$PATH
 ```
 
+#### 单点模式
+
+```shell
+/home/avalon/mongodb/bin/mongod --dbpath=/home/avalon/mongodb/data --logpath=/home/avalon/mongodb/logs/mongodb.log --pidfilepath=/home/avalon/mongodb/mongo.pid --bind_ip_all --maxConns 128 --logappend --port=27017 --noauth --fork
+```
+
 #### 初始脚本
 
 ```shell
@@ -569,3 +575,121 @@ mongos> sh.addShard("27001/192.168.50.201:27001,192.168.50.202:27001,192.168.50.
 原因：mongos本身不存储任何数据，每次启动都是去config server获取集群的元数据，在配置文件中也指定了相应的config副本集信息，所以应当登录对应config副本集账号。
 
 解决方法：登录config账号
+
+### 副本集
+
+```shell
+#初始化副本集
+> rs.initiate({
+    "_id":"myReplSet",
+    "members":[
+        {
+            "_id":1,
+            "host":"192.168.50.201:27017",
+            "priority":1
+        },
+        {
+            "_id":2,
+            "host":"192.168.50.205:27017",
+            "priority":1
+        }
+    ]
+})
+
+#查看副本集状态
+rs001:OTHER> rs.status()
+{
+	"set" : "rs001",
+	"date" : ISODate("2020-03-14T09:18:15.355Z"),
+	"myState" : 2,
+	"term" : NumberLong(0),
+	"syncingTo" : "",
+	"syncSourceHost" : "",
+	"syncSourceId" : -1,
+	"heartbeatIntervalMillis" : NumberLong(2000),
+	"optimes" : {
+		"lastCommittedOpTime" : {
+			"ts" : Timestamp(0, 0),
+			"t" : NumberLong(-1)
+		},
+		"appliedOpTime" : {
+			"ts" : Timestamp(1584177485, 1),
+			"t" : NumberLong(-1)
+		},
+		"durableOpTime" : {
+			"ts" : Timestamp(1584177485, 1),
+			"t" : NumberLong(-1)
+		}
+	},
+	"lastStableCheckpointTimestamp" : Timestamp(0, 0),
+	"members" : [
+		{
+			"_id" : 1,
+			"name" : "192.168.50.201:27017",
+			"health" : 1,
+			"state" : 2,
+			"stateStr" : "SECONDARY",
+			"uptime" : 719,
+			"optime" : {
+				"ts" : Timestamp(1584177485, 1),
+				"t" : NumberLong(-1)
+			},
+			"optimeDate" : ISODate("2020-03-14T09:18:05Z"),
+			"syncingTo" : "",
+			"syncSourceHost" : "",
+			"syncSourceId" : -1,
+			"infoMessage" : "could not find member to sync from",
+			"configVersion" : 1,
+			"self" : true,
+			"lastHeartbeatMessage" : ""
+		},
+		{
+			"_id" : 2,
+			"name" : "192.168.50.202:27017",
+			"health" : 1,
+			"state" : 2,
+			"stateStr" : "SECONDARY",
+			"uptime" : 9,
+			"optime" : {
+				"ts" : Timestamp(1584177485, 1),
+				"t" : NumberLong(-1)
+			},
+			"optimeDurable" : {
+				"ts" : Timestamp(1584177485, 1),
+				"t" : NumberLong(-1)
+			},
+			"optimeDate" : ISODate("2020-03-14T09:18:05Z"),
+			"optimeDurableDate" : ISODate("2020-03-14T09:18:05Z"),
+			"lastHeartbeat" : ISODate("2020-03-14T09:18:14.939Z"),
+			"lastHeartbeatRecv" : ISODate("2020-03-14T09:18:14.961Z"),
+			"pingMs" : NumberLong(0),
+			"lastHeartbeatMessage" : "",
+			"syncingTo" : "",
+			"syncSourceHost" : "",
+			"syncSourceId" : -1,
+			"infoMessage" : "",
+			"configVersion" : 1
+		}
+	],
+	"ok" : 1,
+	"operationTime" : Timestamp(1584177485, 1),
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1584177485, 1),
+		"signature" : {
+			"hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+			"keyId" : NumberLong(0)
+		}
+	}
+}
+
+#副本集移除
+rs001:PRIMARY> rs.remove("192.168.50.206:27017")
+
+#副本集添加
+rs001:PRIMARY> rs.add("192.168.50.206:27017")
+
+#副本集配置
+rs001:PRIMARY> rs.conf()
+```
+
+​		所有的Secondary都宕机、或则副本集中只剩下一个节点，则该节点只能为Secondary节点，也就意味着整个集群只能进行读操作而不能进行写操作，直到有节点恢复之后才能继续进行写操纵。
