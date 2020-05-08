@@ -56,8 +56,8 @@ max-connections=100
 # 9.PIPES_AS_CONCAT
 #   将"||"视为字符串的连接操作符而非或运算符，这和Oracle数据库是一样的，也和字符串的拼接函数Concat相类似
 # 10.ANSI_QUOTES
-#   启用ANSI_QUOTES后，不能用双引号来引用字符串，因为它被解释为识别符
-sql_mode=ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,PIPES_AS_CONCAT,ANSI_QUOTES
+#   启用ANSI_QUOTES后，可以使用双引号来引用字符串
+sql_mode=STRICT_TRANS_TABLES,NO_AUTO_VALUE_ON_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,PIPES_AS_CONCAT,ANSI_QUOTES
 #开启binlog，并指定对应文件
 log_bin=mysql_bin
 #MySQL的二进制日志（binary log）同步到磁盘的频率，取值0-N
@@ -155,7 +155,7 @@ server_id=1
 #	&		后台启动
 nohup /home/avalon/mysql/bin/mysqld --user=avalon --defaults-file=/home/avalon/mysql/my.cnf >/dev/null 2>&1 &
 #MariaDB服务启动,--defaults-file参数需要在最前面，，当前在mysql根目录
-nohup ./bin/mysqld --defaults-file=./my.cnf --user=avalon --basedir=./ --datadir=./data >./mysql.log 2>&1 &
+nohup ./bin/mysqld --defaults-file=./my.cnf --user=avalon --basedir=./ --datadir=./data >/dev/null 2>&1 &
 ```
 
 ### 停止服务

@@ -5,18 +5,39 @@ https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.16.tar.gz
 ## elasticsearch配置文件
 
 ```yml
-cluster.name: avalon
-node.name: linux001
-path.data: /path/to/data
-path.logs: /path/to/logs
-bootstrap.memory_lock: false
-bootstrap.system_call_filter: false
-network.host: 0.0.0.0
+# ---------------------------------- Cluster -----------------------------------
+cluster.name: es
+# ------------------------------------ Node ------------------------------------
+node.name: 101
+node.attr.rack: r1
+# ----------------------------------- Paths ------------------------------------
+path.data: /home/avalon/elasticsearch/data
+path.logs: /home/avalon/elasticsearch/logs
+# ----------------------------------- Memory -----------------------------------
+bootstrap.memory_lock: true
+# ---------------------------------- Network -----------------------------------
+network.host: 192.168.50.101
+http.port: 9200
+# --------------------------------- Discovery ----------------------------------
+discovery.zen.ping.unicast.hosts: ["192.168.50.101", "192.168.50.102","192.168.50.103"]
+discovery.zen.minimum_master_nodes: 2
+# ---------------------------------- Gateway -----------------------------------
+gateway.recover_after_nodes: 3
+# ---------------------------------- Various -----------------------------------
+action.destructive_requires_name: true
 node.master: true
 node.data: true
-http.port: 9200
-discovery.zen.ping.unicast.hosts: ["192.168.1.201", "192.168.1.202","192.168.1.203"]
-discovery.zen.minimum_master_nodes: 2
+
+
+server.port: 5601
+server.host: "192.168.50.100"
+elasticsearch.url: "http://192.168.50.101:9200"
+logging.dest: /home/avalon/kibana/kibana.log
+logging.verbose: true
+kibana.index: kibana
+
+docker run -p 10001:1358 -d appbaseio/dejavu
+
 ```
 
 
@@ -68,10 +89,28 @@ avalon          soft    nofile          65536
 vm.max_map_count = 262144
 ```
 
+[1]: memory locking requested for elasticsearch process but memory is not locked
+
+```shell
+[root@192 ~]# vim /etc/security/limits.conf
+* hard nofile 65536
+* soft nofile 65536
+* soft memlock unlimited
+* hard memlock unlimited
+或者
+avalon  hard nofile  65536
+avalon  soft nofile  65536
+avalon  soft memlock unlimited
+avalon  hard memlock unlimited
+```
+
 ## 开机启动脚本
 
 ```shell
-#编辑文件 /etc/rc.d/rc.local
-sh /home/avalon/bash/es-start.sh &
+#编辑文件
+sudo vim /etc/rc.d/rc.local
+sh /home/avalon/elasticsearch/start.sh &
 ```
+
+## springboot整合
 
