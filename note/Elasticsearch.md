@@ -5,28 +5,42 @@ https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.16.tar.gz
 ## elasticsearch配置文件
 
 ```yml
-# ---------------------------------- Cluster -----------------------------------
+#--------------------------------单机单服务--------------------------------
 cluster.name: es
-# ------------------------------------ Node ------------------------------------
 node.name: 101
 node.attr.rack: r1
-# ----------------------------------- Paths ------------------------------------
 path.data: /home/avalon/elasticsearch/data
 path.logs: /home/avalon/elasticsearch/logs
-# ----------------------------------- Memory -----------------------------------
 bootstrap.memory_lock: true
-# ---------------------------------- Network -----------------------------------
 network.host: 192.168.50.101
 http.port: 9200
-# --------------------------------- Discovery ----------------------------------
-discovery.zen.ping.unicast.hosts: ["192.168.50.101", "192.168.50.102","192.168.50.103"]
+discovery.zen.ping.unicast.hosts : ["192.168.50.101","192.168.50.102","192.168.50.103"]
 discovery.zen.minimum_master_nodes: 2
-# ---------------------------------- Gateway -----------------------------------
-gateway.recover_after_nodes: 3
-# ---------------------------------- Various -----------------------------------
+node.max_local_storage_nodes: 1
+gateway.recover_after_nodes: 1
 action.destructive_requires_name: true
 node.master: true
 node.data: true
+#--------------------------------单机多服务--------------------------------
+cluster.name: es-cluster
+node.name: node1
+node.attr.rack: r1
+path.data: /home/avalon/es-cluster/node1/data
+path.logs: /home/avalon/es-cluster/node1/logs
+bootstrap.memory_lock: true
+network.host: 192.168.50.200
+http.port: 19201
+transport.tcp.port: 19301
+discovery.zen.ping.unicast.hosts : ["192.168.50.200:19301,19302,19303"]
+discovery.zen.minimum_master_nodes: 2
+node.max_local_storage_nodes: 1
+gateway.recover_after_nodes: 1
+node.max_local_storage_nodes: 1024
+action.destructive_requires_name: true
+node.master: true
+node.data: true
+#--------------------------------end--------------------------------
+
 
 
 server.port: 5601
@@ -35,19 +49,18 @@ elasticsearch.url: "http://192.168.50.101:9200"
 logging.dest: /home/avalon/kibana/kibana.log
 logging.verbose: true
 kibana.index: kibana
-
-docker run -p 10001:1358 -d appbaseio/dejavu
-
 ```
 
 
 
 ## elasticsearch问题总结
 
+[3] bootstrap checks failed
 [1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65536]
-[2]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+[2]: memory locking requested for elasticsearch process but memory is not locked
+[3]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
 
-第一行错误表示每个进程可同时打开的文件数太小，可通过以下命令查看当前数量
+表示每个进程可同时打开的文件数太小，可通过以下命令查看当前数量
 
 ``` shell
 #查看资源的硬性限制，即管理员所设下的限制。
@@ -106,10 +119,170 @@ avalon  hard memlock unlimited
 
 ## 开机启动脚本
 
+### 创建启动文件
+
+cd /etc/init.d
+vim es
+chmod 777 es
+
 ```shell
-#编辑文件
-sudo vim /etc/rc.d/rc.local
-sh /home/avalon/elasticsearch/start.sh &
+#!/bin/bash
+#chkconfig: 345 63 37
+#description: elasticsearch
+#processname: elasticsearch
+
+export JAVA_HOME=/home/avalon/jdk1.8.0_151
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+ES_HOME=/home/avalon/elasticsearch
+case $1 in
+    start)
+        su avalon<<EOF
+			cd $ES_HOME
+			./bin/elasticsearch -d -p pid
+			exit
+EOF
+        echo "elasticsearch is started"
+        ;;
+				
+    stop)
+        pid=`cat $ES_HOME/pid`
+        kill -9 $pid
+        echo "elasticsearch is stopped"
+        ;;
+				
+    restart)
+        pid=`cat $ES_HOME/pid`
+        kill -9 $pid
+        echo "elasticsearch is stopped"
+        sleep 1
+        su avalon<<EOF
+            cd $ES_HOME
+            ./bin/elasticsearch -d -p pid
+            exit
+EOF
+        echo "elasticsearch is started"
+		;;
+	*)
+		echo "start|stop|restart"
+        ;;  
+esac
+
+exit 0
+```
+### 添加和删除服务并设置启动方式
+chkconfig --add es【添加系统服务】
+chkconfig --del es 【删除系统服务】
+
+### 关闭和启动服务
+service es start	【启动】
+service es stop	【停止】
+service es restart【重启】
+
+### 设置服务开机启动
+chkconfig es on【开启】
+chkconfig es off【关闭】
+
+## 常见操作
+
+### 相关命令
+
+#### _cat
+
+```shell
+_cat系列提供了一系列查询Elasticsearch集群状态的接口。
+每个命令都支持使用?v参数，让输出内容表格显示表头; pretty则让输出缩进更规范
+
+/_cat/allocation      #查看单节点的shard分配整体情况
+/_cat/shards          #查看各shard的详细情况
+/_cat/shards/{index}  #查看指定分片的详细情况
+/_cat/master          #查看master节点信息
+/_cat/nodes           #查看所有节点信息
+/_cat/indices         #查看集群中所有index的详细信息
+/_cat/indices/{index} #查看集群中指定index的详细信息
+/_cat/segments        #查看各index的segment详细信息,包括segment名, 所属shard, 内存(磁盘)占用大小, 是否刷盘
+/_cat/segments/{index}#查看指定index的segment详细信息
+/_cat/count           #查看当前集群的doc数量
+/_cat/count/{index}   #查看指定索引的doc数量
+/_cat/recovery        #查看集群内每个shard的recovery过程.调整replica。
+/_cat/recovery/{index}#查看指定索引shard的recovery过程
+/_cat/health          #查看集群当前状态：红、黄、绿
+/_cat/pending_tasks   #查看当前集群的pending task
+/_cat/aliases         #查看集群中所有alias信息,路由配置等
+/_cat/aliases/{alias} #查看指定索引的alias信息
+/_cat/thread_pool     #查看集群各节点内部不同类型的threadpool的统计信息,
+/_cat/plugins         #查看集群各个节点上的plugin信息
+/_cat/fielddata       #查看当前集群各个节点的fielddata内存使用情况
+/_cat/fielddata/{fields}     #查看指定field的内存使用情况,里面传field属性对应的值
+/_cat/nodeattrs              #查看单节点的自定义属性
+/_cat/repositories           #输出集群中注册快照存储库
+/_cat/templates              #输出当前正在存在的模板信息
+```
+
+### 创建索引
+
+```shell
+#number_of_shards：每个索引的主分片数，默认值是 5 。这个配置在索引创建后不能修改。
+#number_of_replicas：每个主分片的副本数，默认值是 1 。对于活动的索引库，这个配置可以随时修改。
+#refresh_interval：索引刷新频率
+{
+    "settings": {
+        "number_of_shards": 5,
+        "number_of_replicas": 1,
+        "refresh_interval":"-1",
+        "analysis": {
+            "char_filter": { ... custom character filters ... },
+            "tokenizer":   { ...    custom tokenizers     ... },
+            "filter":      { ...   custom token filters   ... },
+            "analyzer":    { ...    custom analyzers      ... }
+        }
+    }
+}
+#自定义过滤器
+"char_filter": {
+    "&_to_and": {
+        "type":       "mapping",
+        "mappings": [ "&=> and "]
+    }
+}
+#自定义分词器
+"filter": {
+    "my_stopwords": {
+        "type":        "stop",
+        "stopwords": [ "the", "a" ]
+    }
+}                           
+#分析器（）=字符过滤器（char_filter）+分词器（filter）+词元过滤器（filter）
+#es内置的分词器（analyzer）：standard、simple、whitespace、keyword、custom
+#ik内置分词器：ik_smart（会做最粗粒度的拆分） ik_max_word（会将文本做最细粒度的拆分）
+```
+
+### 动态映射
+
+当 Elasticsearch 遇到文档中以前未遇到的字段，通过dynamic来确定字段的数据类型并自动把新的字段添加到类型映射。
+
+```shell
+dynamic
+true   :动态添加新的字段—缺省
+false  :忽略新的字段
+strict :如果遇到新字段抛出异常
+
+PUT /my_index
+{
+    "mappings": {
+        "my_type": {
+            "dynamic":      "strict", 
+            "properties": {
+                "title":  { "type": "string"},
+                "stash":  {
+                    "type":     "object",
+                    "dynamic":  true 
+                }
+            }
+        }
+    }
+}
 ```
 
 ## springboot整合
