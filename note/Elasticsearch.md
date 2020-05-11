@@ -14,10 +14,9 @@ path.logs: /home/avalon/elasticsearch/logs
 bootstrap.memory_lock: true
 network.host: 192.168.50.101
 http.port: 9200
-discovery.zen.ping.unicast.hosts : ["192.168.50.101","192.168.50.102","192.168.50.103"]
+discovery.zen.ping.unicast.hosts: ["192.168.50.101","192.168.50.102","192.168.50.103"]
 discovery.zen.minimum_master_nodes: 2
-node.max_local_storage_nodes: 1
-gateway.recover_after_nodes: 1
+gateway.recover_after_nodes: 3
 action.destructive_requires_name: true
 node.master: true
 node.data: true
@@ -33,7 +32,6 @@ http.port: 19201
 transport.tcp.port: 19301
 discovery.zen.ping.unicast.hosts : ["192.168.50.200:19301,19302,19303"]
 discovery.zen.minimum_master_nodes: 2
-node.max_local_storage_nodes: 1
 gateway.recover_after_nodes: 1
 node.max_local_storage_nodes: 1024
 action.destructive_requires_name: true
@@ -49,6 +47,9 @@ elasticsearch.url: "http://192.168.50.101:9200"
 logging.dest: /home/avalon/kibana/kibana.log
 logging.verbose: true
 kibana.index: kibana
+
+
+docker run -d --restart=always --log-driver json-file --log-opt max-size=100m --log-opt max-file=2 --name kibana -p 5601:5601 -v /home/docker/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml kibana:5.6.16
 ```
 
 
