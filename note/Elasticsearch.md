@@ -288,3 +288,105 @@ PUT /my_index
 
 ## springboot整合
 
+```json
+如果我们希望两个字段进行匹配，其中一个字段有这个文档就满足的话，使用multi_match
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马多少马力",
+               "fields": [
+                    "title",
+                    "content"
+               ]
+          }
+     }
+}
+
+我们希望越多字段匹配的文档评分越高，就要使用most_fields
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马发动机多少",
+               "type": "most_fields",
+               "fields": [
+                    "tag",
+                    "content"
+               ]
+          }
+     }
+}
+
+我们会希望这个词条的分词词汇是分配到不同字段中的，那么就使用cross_fields
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马发动机多少",
+               "type": "cross_fields",
+               "fields": [
+                    "tag",
+                    "content"
+               ]
+          }
+     }
+}
+
+我们希望完全匹配的文档占的评分比较高，则需要使用best_fields
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马发动机多少",
+               "type": "best_fields",
+               "fields": [
+                    "tag",
+                    "content"
+               ],
+               "tie_breaker": 0.3
+          }
+     }
+}
+
+我们希望越多字段匹配的文档评分越高，就要使用most_fields
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马发动机多少",
+               "type": "most_fields",
+               "fields": [
+                    "tag",
+                    "content"
+               ]
+          }
+     }
+}
+
+我们会希望这个词条的分词词汇是分配到不同字段中的，那么就使用cross_fields
+{
+     "query": {
+          "multi_match": {
+               "query": "我的宝马发动机多少",
+               "type": "cross_fields",
+               "fields": [
+                    "tag",
+                    "content"
+               ]
+          }
+     }
+}
+
+term是代表完全匹配，即不进行分词器分析，文档中必须包含整个搜索的词汇
+{
+     "query": {
+          "term": {
+               "content": "汽车保养"
+          }
+     }
+}
+
+bool联合查询: must,should,must_not
+must: 文档必须完全匹配条件
+should: should下面会带一个以上的条件，至少满足一个条件，这个文档就符合should
+must_not: 文档必须不匹配条件
+
+
+```
+
