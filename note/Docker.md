@@ -381,10 +381,22 @@ docker pull mysql:5.7
 ##### 3.启动容器
 
 ```shell
-docker run -p 3306:3306 --name mysql -v /home/docker/mysql:/etc/mysql/conf.d -v /home/docker/mysql/logs:/logs -v /home/docker/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=asdfasdf -d mysql:5.7
+docker run \
+ -p 3306:3306 \
+ --name mysql \
+ --restart=always \
+ -v /home/docker/mysql/conf:/etc/mysql/conf.d \
+ -v /home/docker/mysql/logs:/logs \
+ -v /home/docker/mysql/data:/var/lib/mysql \
+ -e MYSQL_ROOT_PASSWORD=asdfasdf \
+ -d mysql:5.7
 # --name 表示为容器指定一个名称
+# --restart=always  no:不自动重启容器.(默认value)
+#                   on-failure:容器发生error而退出(容器退出状态不为0)重启容器
+#                   unless-stopped:在容器已经stop掉或Docker stoped/restarted的时候才重启容器容器发生error而退出(容器退出状态不为0)重启容器
+#                   always:在容器已经stop掉或Docker stoped/restarted的时候才重启容器
 # -p 3306:3306 将容器的3306端口映射到主机的3306端口
-# -v /home/mysql/mysql:/etc/mysql/conf.d 将宿主机当前目录下的/home/mysql/mysql/my.cnf 挂载到容器的/etc/mysql/my.cnf
+# -v /home/mysql/mysql/conf:/etc/mysql/conf.d 将宿主机当前目录下的/home/mysql/mysql/my.cnf 挂载到容器的/etc/mysql/my.cnf
 # -v /home/mysql/mysql/log:/logs 将宿主机下的/home/mysql/mysql/log目录挂载到容器的/logs
 # -v /home/mysql/mysql/data:/var/lib/mysql
 # -e MYSQL_ROOT_PASSWORD=asdfasdf 设置root密码为asdfasdf
