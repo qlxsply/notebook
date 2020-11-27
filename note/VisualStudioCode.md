@@ -30,5 +30,5 @@ ssh-copy-id avalon@8.129.213.168
 
 #### 自动导入
 
-`Shift+Alt+O` 自动导入包
-
+`Shift+Alt+o` 自动导入包
+`Ctrl+Shift+k` 自动导入包
