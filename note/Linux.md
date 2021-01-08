@@ -44,6 +44,29 @@ export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 4.注意，启动时执行的脚本必须以exit 0结尾，表示程序正常执行完成并退出
 ```
 
+## 字体安装
+
+```shell
+# 1.将对应字体复制至/usr/share/fonts/文件夹内
+/usr/share/fonts/字体文件夹/
+# 2.
+mkfontscale
+# 3.
+mkfontdir
+# 4.扫描字体目录并生成字体信息的缓存
+fc-cache -fv
+-E, --error-on-no-fonts  raise an error if no fonts in a directory
+-f, --force              scan directories with apparently valid caches
+-r, --really-force       erase all existing caches, then rescan
+-s, --system-only        scan system-wide directories only
+-y, --sysroot=SYSROOT    prepend SYSROOT to all paths for scanning
+-v, --verbose            display status information while busy
+-V, --version            display font config version and exit
+-h, --help               display this help and exit
+```
+
+
+
 ## 应用
 
 ### tomcat
