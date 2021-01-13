@@ -116,6 +116,28 @@ avalon  hard nofile  65536
 avalon  soft nofile  65536
 avalon  soft memlock unlimited
 avalon  hard memlock unlimited
+
+验证 memlock unlimited 是否已经生效
+[es@apec-204 node1]$ ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 62337
+max locked memory       (kbytes, -l) 64
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 65556
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 4096
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+
+[es@apec-204 node1]$ ulimit -l
+64
 ```
 
 ## 开机启动脚本
