@@ -160,26 +160,132 @@ gcc -g -Wall
 # 关闭所有的优化机制，以便程序执行过程中严格按照原来的C代码进行
 # -Wall
 # 显示警告信息
-
-
-
-
 ```
 
-## Java代码开发设置
+## Java开发设置
 
-### 格式化设置
+### settings.json
 
 ```json
 {
+    "editor.fontSize": 16,
+    "terminal.integrated.fontSize": 16,
+    "java.home": "/home/rsjhs/Programs/jdk-11.0.9+11",
+    // 指定搜索Maven项目时要排除的文件夹的文件路径模式。
+    "maven.excludedFolders": [
+        "**/.*",
+        "**/node_modules",
+        "**/target",
+        "**/bin"
+    ],
+    "editor.suggestSelection": "first",
+    // 设置是否使用Maven包装器，如果true则尝试从上级目录中循环找mvnw，如果为false则使用PATH中设置的mvn
+    "maven.executable.preferMavenWrapper": true,
+    // maven路径
+    "maven.executable.path": "/home/rsjhs/Programs/apache-maven-3.6.3",
+    // maven配置文件
+    "java.configuration.maven.userSettings": "/home/rsjhs/Programs/apache-maven-3.6.3/conf/settings.xml",
+    // mvn指令的默认选项
+    "maven.executable.options": "-o -DskipTest",
+    // 设置是否自动升级pom文件中的依赖
+    "maven.pomfile.autoUpdateEffectivePOM": true,
+    // 指定用于查找pom.xml文件的全局模式。
+    "maven.pomfile.globPattern": "**/pom.xml",
+    // 设置Maven使用的Java环境变量，如果为false则使用系统默认的
+    "maven.terminal.useJavaHome": false,
+    // 指定环境变量名称和值的数组。 这些环境变量值将在首次执行Maven之前添加到终端会话中。
+    "maven.terminal.customEnv": [],
+    // 指定预先定义的常用命令执行。
+    "maven.terminal.favorites": [],
+    // 指定查看Maven项目的方式。
+    "maven.view": "hierarchical",
+    // 设置是否在依赖窗口显示依赖的成员
+    "java.dependency.showMembers": false,
+    // 设置在浏览文件的时候是否同步展示依赖
+    "java.dependency.syncWithFolderExplorer": true,
+    // 设置是否自动刷新依赖信息
+    "java.dependency.autoRefresh": true,
+    // 设置自动刷新的时间间隔
+    "java.dependency.refreshDelay": 2000,
+    // 设置如何展示依赖包，flat表示平面展示，hierarchical表示分层展示
+    "java.dependency.packagePresentation": "flat",
+    // 设置插件是否使用，默认值为true
+    "auto-close-tag.enableAutoCloseTag": true,
+    // 设置是否自动关闭没有结束标签的标签，默认值为true
+    "auto-close-tag.enableAutoCloseSelfClosingTag": true,
+    // 设置使用该插件的开发语言，如果支持所有语言的话用["*"]
+    "auto-close-tag.activationOnLanguage": [
+        "xml"
+    ],
     //设置格式化所用配置文件地址
-    "java.format.settings.url": "/home/avalon/.vscode-server/extensions/redhat.java-0.70.0/formatters/eclipse-formatter.xml"
+    "java.format.settings.url": "/home/rsjhs/.vscode-server/extensions/redhat.java-0.73.0/formatters/eclipse-formatter.xml",
+    //文件资源管理器根据此设置决定要显示或隐藏的文件和文件夹
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    //搜索时排除以下文件
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/target": true,
+        "**/logs": true
+    }
+}
+```
+
+### launch.json
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch",
+            "request": "launch",
+            "mainClass": "${file}"
+        }
+    ]
 }
 ```
 
 ### 快捷键
 
-#### 自动导入
+```shell
+# 自动导入包
+Shift+Alt+o
+# 删除行
+Ctrl+Shift+k
+```
 
-`Shift+Alt+o` 自动导入包
-`Ctrl+Shift+k` 自动导入包
+## Go开发设置
+
+### settings.json
+
+```json
+{
+    "editor.fontSize": 20,
+    "files.autoSave": "onFocusChange",
+    "go.goroot": "/home/rsjhs/Programs/go",
+    "go.gopath": "${workspaceRoot}",
+    "go.toolsGopath": "/home/rsjhs/go",
+    "go.formatTool": "goreturns",
+    "go.useLanguageServer": true,
+    "[go]": {
+        "editor.snippetSuggestions": "none",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "gopls": {
+        "usePlaceholders": true,
+        "completionDocumentation": true
+    },
+    "files.eol": "\n"
+}
+```
+

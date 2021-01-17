@@ -93,6 +93,25 @@ allow="^.*$"
 sudo yum -y install lrzsz
 ```
 
+### git
+
+```shell
+# 安装依赖
+yum install -y autoconf automake libtool
+yum install -y zlib-devel
+# 解压
+tar -zxvf git-2.29.2.tar.gz
+# 
+./configure --prefix=/usr/local/git
+# root用户编译安装
+make && make install
+# 环境变量
+vim /etc/profile
+GIT_HOME=/usr/local/git
+PATH=$PATH:$GIT_HOME/bin
+source /etc/profile
+```
+
 ## 常见命令
 
 ### df命令
