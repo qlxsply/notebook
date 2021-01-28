@@ -112,6 +112,31 @@ PATH=$PATH:$GIT_HOME/bin
 source /etc/profile
 ```
 
+### gcc
+
+```shell
+# 安装gcc-9.2.0.tar.gz
+# 1.安装编译依赖库 切换root用户进行安装
+tar -xvf isl-0.22.tar.gz
+cd isl-0.22
+./configure 
+make && make install
+# 2.安装编译依赖库
+yum install -y gcc gcc-c++ gmp-devel mpfr-devel libmpc-devel bzip2
+# 3.编译并安装gcc
+tar -xvf gcc-9.2.0.tar.gz
+cd gcc-9.2.0
+./contrib/download_prerequisites
+mkdir build
+cd build
+../configure --prefix=/usr/local/gcc-9.2.0 -enable-checking=release -enable-languages=c,c++ --disable-multilib
+make -j 10 && make install
+# 4.卸载已有的gcc和g++，设置环境变量
+yum install -y gcc gcc-c++
+export GCC_HOME=/usr/local/gcc-9.2.0
+export PATH=$GCC_HOME/bin:$PATH
+```
+
 ## 常见命令
 
 ### df命令

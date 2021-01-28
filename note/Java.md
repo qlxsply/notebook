@@ -1,5 +1,29 @@
 # Java笔记
 
+## 线程间的通信方式
+
+### suspend和resume
+
+suspend：让线程挂起，暂停，程序停止往下执行
+
+resume：唤醒被suspend的程序，让线程继续执行
+
+缺陷：当线程A使用锁L，如果线程A处于suspend状态，而另一个线程B，需要L这把锁才能resume线程A，因为线程A处理suspend状态，是不会释放L锁，所以线程B线获取不到这个锁，而一直处于争夺L锁的状态，最终导致死锁。
+
+### park和unpark
+
+LockSupport.park()：暂停当前线程
+
+LockSupport.unpark：恢复某个线程的运行
+
+与wait/notify比较：
+
+- wait，notify和notifyAll必须配合Object Monitor一起使用，而unpark不必
+- park & unpark是以线程为单位来【阻塞】和【唤醒】线程，而notify只能随机唤醒一个等待线程，notifyAll是唤醒所有等待线程，就不那么【精确】
+- park & unpark可以先unpark，而wait & notify不能先notify
+
+
+
 1.高并发HashMap的环如何产生
 
 2.线程之间如何通讯
