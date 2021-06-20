@@ -71,7 +71,7 @@ export PATH=$MONGODB_HOME:$PATH
 #### 单点模式
 
 ```shell
-/home/avalon/mongodb/bin/mongod --dbpath=/home/avalon/mongodb/data --logpath=/home/avalon/mongodb/logs/mongodb.log --pidfilepath=/home/avalon/mongodb/mongo.pid --bind_ip_all --maxConns 128 --logappend --port=27017 --noauth --fork
+/home/rsjhs/Programs/mongodb/bin/mongod --dbpath=/home/rsjhs/data/mongo --logpath=/home/rsjhs/data/mongo/logs/mongodb.log --pidfilepath=/home/rsjhs/data/mongo/mongo.pid --bind_ip_all --maxConns 128 --logappend --port=27017 --noauth --fork
 ```
 
 #### 初始脚本

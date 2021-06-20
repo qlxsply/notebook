@@ -201,6 +201,8 @@ docker restart [OPTIONS] CONTAINER [CONTAINER...]
 ```shell
 #连接一个正在运行的container实例（即实例须为start状态，可以多个窗口同时attach一个container实例），但当某个窗口因命令阻塞时，其它窗口也无法执行了。
 docker attach [container_id] 
+
+docker exec -it 85da90966608 /bin/bash
 ```
 
 #### 5.删除容器
@@ -237,6 +239,7 @@ docker run ：创建一个新的容器并运行一个命令
 --dns 8.8.8.8: 指定容器使用的DNS服务器，默认和宿主一致；
 --dns-search example.com: 指定容器DNS搜索域名，默认和宿主一致；
 -h "mars": 指定容器的hostname；
+-u "1002:1002": <name|uid>[:<group|gid>]
 -e username="ritchie": 设置环境变量；
 --env-file=[]: 从指定文件读入环境变量；
 --cpuset="0-2" or --cpuset="0,1,2": 绑定容器到指定CPU运行；
@@ -357,17 +360,60 @@ docker logs --since="2019-11-01" --tail=20 mysql
 	说明：配置当前所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作指令。意思就是，这个镜像创建后，如果其它镜像以这个镜像为基础，会先执行这个镜像的ONBUILD命令。
 ```
 
+## 问题收集
+
+1.iptables: No chain/target/match by that name.
+
+重启docker可以解决
+
+2.Error response from daemon: driver failed programming external connectivity on endpoint gitlab (0ba3ff55675c3c940b0a7fc1eb53cea2bddae07238461aa7579fb105695fa52b): Error starting userland proxy: listen tcp4 0.0.0.0:22: bind: address already in use
+
+重新指定宿主机的IP端口可以解决
+
+3.docker: Error response from daemon: unable to find user docker: no matching entries in passwd file.
+
+
+
 ## Docker安装应用
 
-#### MySQL
+### GitLab
 
-##### 1.拉取官方镜像
+```shell
+# 不加 tag 则默认为最新版本 latest (一般使用这种)
+$ sudo docker pull gitlab/gitlab-ce
+
+# 如果需要下载其他版本，加上对应的 tag 即可，如：
+$ sudo docker pull gitlab/gitlab-ce:rc
+
+# gitlab启动命令
+docker run -it -d \
+-h git.avalon.com \
+-p 9001:443 \
+-p 9002:80 \
+-p 9003:22 \
+--name gitlab \
+--restart always \
+-v /home/docker/gitlab/config:/etc/gitlab \
+-v /home/docker/gitlab/logs:/var/log/gitlab \
+-v /home/docker/gitlab/data:/var/opt/gitlab \
+gitlab/gitlab-ce:latest
+
+# 非22端口测试ssh git
+$ ssh -T -p 9003 git@git.avalon.com
+
+# 非22端口的clone操作
+$ git clone ssh://git@git.avalon.com:9003/autojs/click.git
+```
+
+### MySQL
+
+#### 1.拉取官方镜像
 
 ```shell
 docker pull mysql:5.7
 ```
 
-##### 2.在宿主机创建配置文件与相关文件夹
+#### 2.在宿主机创建配置文件与相关文件夹
 
 ```shell
 例如在/home/docker/mysql路径下创建
@@ -378,7 +424,7 @@ docker pull mysql:5.7
 |my.cnf
 ```
 
-##### 3.启动容器
+#### 3.启动容器
 
 ```shell
 docker run \
@@ -459,7 +505,7 @@ max_connections=5000
 default-time_zone = '+8:00'
 ```
 
-##### 4.查看启动情况
+#### 4.查看启动情况
 
 ```shell
 [mysql@localhost data]$ docker ps 
@@ -468,14 +514,14 @@ e5f20026e86c        383867b75fd2        "docker-entrypoint.s…"   18 minutes ag
 
 ```
 
-##### 5.进入容器
+#### 5.进入容器
 
 ```shell
 #进入容器，后续操作和linux一致
 docker exec -it mysql bash
 ```
 
-##### 6.自制镜像
+#### 6.自制镜像
 
 ```shell
 按照该配置，容器启动后会关闭，待解决
@@ -599,15 +645,15 @@ docker build -f ./Dockerfile -t db:1.0 .
 docker run -p 3306:3306 --name mysql -v /home/docker/mysql/logs:/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/log -v /home/docker/mysql/data:/usr/local/mysql-5.7.26-linux-glibc2.12-x86_64/data -d db:1.0
 ```
 
-#### Zookeeper
+### Zookeeper
 
-##### 1.拉取镜像
+#### 1.拉取镜像
 
 ```shell
 docker pull zookeeper:3.5
 ```
 
-##### 2.配置文件zoo.cfg
+#### 2.配置文件zoo.cfg
 
 ```shell
 #数据存放路径
@@ -633,20 +679,20 @@ server.2=192.168.50.202:2888:3888
 server.3=192.168.50.203:2888:3888
 ```
 
-##### 3.启动容器
+#### 3.启动容器
 
 ```shell
 docker run -p 2181:2181 --name zookeeper --net host --restart always -v /home/docker/zookeeper/data:/usr/zookeeper/data -v /home/docker/zookeeper/log:/usr/zookeeper/log -v /home/docker/zookeeper/conf/zoo.cfg:/conf/zoo.cfg -e ZOO_MY_ID=1 -d zookeeper:3.5
 ```
 
-##### 4.进入容器
+#### 4.进入容器
 
 ```shell
 #进入容器，后续操作和linux一致
 docker exec -it zookeeper bash
 ```
 
-##### 5.问题
+#### 5.问题
 
 ```shell
 1.Caused by: java.lang.IllegalArgumentException: myid file is missing
@@ -658,9 +704,9 @@ docker exec -it zookeeper bash
 		 sudo systemctl disable firewalld.service
 ```
 
-#### Fabric
+### Fabric
 
-##### 1.安装fabric-ca
+#### 1.安装fabric-ca
 
 ```shell
 1.安装Go环境
@@ -670,7 +716,7 @@ export PATH=$PATH:$GOROOT/bin
 source /etc/profile
 ```
 
-#### Redis
+### Redis
 
 ```shell
 $ docker run -itd --name redis --restart always -p 6379:6379 redis:latest

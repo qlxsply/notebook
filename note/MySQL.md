@@ -473,6 +473,88 @@ MariaDB [iris]> desc user;
 +--------+---------------------+------+-----+---------+-------+
 ```
 
+## 数据修复
+
+### binlog
+
+binlog日志有三种格式，分别为statement，row以及mixed
+statement：	  基于SQL语句的复制，优点：时间短复制快；缺点：很多函数不支持
+row：				基于行的复制，优点：复制逻辑简单安全；缺点：时间长复制慢
+mix：				两者兼顾
+无论是哪一种日志格式，都是数据增量复制。
+
+### 查看与备份
+
+```shell
+# 查看日志格式
+MariaDB [(none)]> show variables like 'binlog_format';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| binlog_format | ROW   |
++---------------+-------+
+# 查看日志是否开启
+MariaDB [(none)]> show variables like 'log_bin';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| log_bin       | ON    |
++---------------+-------+
+# 查看日志文件列表
+MariaDB [(none)]> show binary logs;
++------------------+-----------+
+| Log_name         | File_size |
++------------------+-----------+
+| mysql_bin.000013 |       342 |
+| mysql_bin.000014 |       342 |
+| mysql_bin.000015 |     15537 |
++------------------+-----------+
+或者
+MariaDB [(none)]> show master logs;
++------------------+-----------+
+| Log_name         | File_size |
++------------------+-----------+
+| mysql_bin.000013 |       342 |
+| mysql_bin.000014 |       342 |
+| mysql_bin.000015 |     15537 |
++------------------+-----------+
+# 查看日志文件状态
+MariaDB [(none)]> show master status;
++------------------+----------+--------------+------------------+
+| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++------------------+----------+--------------+------------------+
+| mysql_bin.000015 |    15537 |              |                  |
++------------------+----------+--------------+------------------+
+# 查看日志事件内容
+# from：指定查询开始Pos位置
+# limit：跳过条数，查询总条数
+MariaDB [(none)]> show binlog events in 'mysql_bin.000015' from 14997 limit 1,3;
++------------------+-------+----------------+-----------+-------------+---------------------------------+
+| Log_name         | Pos   | Event_type     | Server_id | End_log_pos | Info                            |
++------------------+-------+----------------+-----------+-------------+---------------------------------+
+| mysql_bin.000015 | 15053 | Update_rows_v1 |         1 |       15119 | table_id: 109 flags: STMT_END_F |
+| mysql_bin.000015 | 15119 | Xid            |         1 |       15150 | COMMIT /* xid=653 */            |
+| mysql_bin.000015 | 15150 | Gtid           |         1 |       15192 | BEGIN GTID 0-1-5397             |
++------------------+-------+----------------+-----------+-------------+---------------------------------+
+#-----------------------------------------------
+# 导出binlog为sql文件
+# -d, --database=name		仅显示指定数据库的转储内容。
+# -o, --offset=				跳过前N行的日志条目。
+# -r, --result-file=		将输入的文本格式的文件转储到指定的文件。
+# -s, --short-form			使用简单格式。
+# --set-charset=name		在转储文件的开头增加'SET NAMES character_set'语句。
+# --start-datetime=			转储日志的起始时间。
+# --stop-datetime=			转储日志的截止时间。
+# --start-position=			转储日志的起始位置。
+# --stop-position=			转储日志的截止位置。
+./bin/mysqlbinlog -d avalon --start-position=18458 --stop-position=22223 ./data/mysql_bin.000015 -s -r ./001.sql
+# 重新执行sql语句
+# mysql -u用户名 -p密码 -D数据库<[sql脚本文件路径全名]
+./bin/mysql -uroot -pasdfasdf -Davalon<./001.sql
+或者
+MariaDB [avalon]> source ./001.sql
+```
+
 ## 问题
 
 1.MVCC多版本并发控制

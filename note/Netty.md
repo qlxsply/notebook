@@ -1,3 +1,9 @@
+# Netty
+
+## 线程模型
+
+Netty主要基于主从Reactor多线程模型
+
 ## Netty模型
 
 1.netty抽象出两组线程池，其中BossGroup负责接收客户端的链接，WorkerGroup负责网络的读写。
@@ -28,6 +34,14 @@
 
 8.每个Worker NioEventLoop处理任务时，会使用pipeline（管道），pipeline中包含了channel，即通过pipeline可以获取对应的通道，管道内维护了很多的处理器。
 
- 
+##  ByteBuf
 
- 
+优点：
+1.可被用户自定义的缓冲区类型扩展
+2.通过内置的复合缓冲区类型实现了透明的零拷贝
+3.容量可以按需成长，类似于StringBuilder
+4.相比于NIO提供的ByteBuffer，读写索引分离，不需要flip进行切换
+5.支持方法的链式调用
+6.支持引用计数
+7.支持池化
+
