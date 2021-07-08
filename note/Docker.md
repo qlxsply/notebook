@@ -398,6 +398,10 @@ docker run -it -d \
 -v /home/docker/gitlab/data:/var/opt/gitlab \
 gitlab/gitlab-ce:latest
 
+# 如果gitlab映射ssh端口不是22，那么修改配置文件
+vim /etc/gitlab/gitlab.rb
+gitlab_rails['gitlab_shell_ssh_port'] = 9003
+
 # 非22端口测试ssh git
 $ ssh -T -p 9003 git@git.avalon.com
 

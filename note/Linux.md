@@ -174,6 +174,21 @@ export PATH=$GCC_HOME/bin:$PATH
   -v                    (ignored)
 ```
 
+### du命令
+
+```shell
+#查看目录的大小（disk usage）
+-s, --summarize       display only a total for each argument
+-h, --human-readable  print sizes in human readable format (e.g., 1K 234M 2G)
+#查看当前目录下文件大小
+[docker@localhost source]$ du -sh *
+4.0K	Dockerfile
+4.0K	init.sql
+4.0K	my.cnf
+615M	mysql-5.7.26-linux-glibc2.12-x86_64.tar.gz
+4.0K	setup.sh
+```
+
 ### free命令
 
 ```shell
@@ -296,21 +311,6 @@ COMMAND		进程名称或路径
 m			按进程占用内存由高到低排序
 1			CPU按各个核心分别显示详细信息
 p			按照CPU的使用率由高到低排列
-```
-
-### du命令
-
-```shell
-#查看目录的大小（disk usage）
--s, --summarize       display only a total for each argument
--h, --human-readable  print sizes in human readable format (e.g., 1K 234M 2G)
-#查看当前目录下文件大小
-[docker@localhost source]$ du -sh *
-4.0K	Dockerfile
-4.0K	init.sql
-4.0K	my.cnf
-615M	mysql-5.7.26-linux-glibc2.12-x86_64.tar.gz
-4.0K	setup.sh
 ```
 
 ### find命令

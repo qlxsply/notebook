@@ -69,6 +69,8 @@ ssh-copy-id avalon@8.129.213.168
 
 ​	当前激活文件中所选择的文本
 
+## JavaScript开发设置
+
 ## C/C++开发设置
 
 ### tasks.json
@@ -303,4 +305,67 @@ Ctrl+Shift+k
     "files.eol": "\n"
 }
 ```
+
+## 快捷键
+### 跳转
+| 快捷键 | 作用 |
+| ------------ | ------------ |
+| Ctrl + Pagedown/Pageup | 在已经打开的多个文件之间进行切换 |
+| Ctrl + Shift + O	| 当前文件内的方法和属性之间进行跳转（Ctrl + P @ 也能实现）|
+| Ctrl + G | 跳转到指定行（Ctrl + P : 也能实现） |
+| Ctrl + Shift + \ | 转到括号 |
+
+### 搜索
+| 快捷键 | 作用 |
+| ------------ | ------------ |
+| Ctrl + F | 当前文件搜索 |
+| Ctrl + Shift + F | 全局文件搜索 |
+| Ctrl + P | 在当前的项目工程里，全局搜索文件名 |
+
+### 编辑操作
+| 快捷键 | 作用 |
+| ------------ | ------------ |
+| Ctrl + / | 切换行注释 |
+| Alt + Shift + A | 切换块注释 |
+| Alt + Shift + 向下箭头 | 复制行 |
+| Ctrl + Enter | 在当前行的下方新增一行，然后跳至该行 |
+| Ctrl + Shift + Enter | 在当前行的上方新增一行，然后跳至该行 |
+| Alt + ↑ | 将代码向上移动 |
+| Alt + ↓ | 将代码向下移动 |
+| Alt + Shift + ↑ | 将代码向上复制 |
+| Alt + Shift + ↓ | 将代码向下复制 |
+| Ctrl + Alt + 上下键 | 在连续的多列上，同时出现光标，可以同时编辑多行 |
+| Alt + 鼠标点击任意位置 | 在连续的多列上，同时出现光标，可以同时编辑多行 |
+| Ctrl + Shift + L | 在选中文本的所有相同内容处，出现光标 |
+| Alt + Shift + I | 对于选中的多行文档，在每一行的末尾创建一个光标 |
+| Ctrl + Shift + K | 删除整行 |
+| Alt + Shift + F | 代码格式化 |
+| F2 | 以重构的方式进行重命名 |
+| Ctrl + Shift + [ ] | 折叠打开当前代码块 |
+| Ctrl + L | 选中当前行 |
+
+### 界面操作
+| 快捷键 | 作用 |
+| ------------ | ------------ |
+| Ctrl + Shift + E | 资源管理器 |
+| Ctrl + Shift + F | 全局搜索 |
+| Ctrl + Shift + G G | 源代码管理（组合键） |
+| Ctrl + Shift + D | 调试和运行 |
+| Ctrl + Shift + X | 扩展插件 |
+| Ctrl + ` | 打开终端 |
+| Ctrl + Shift + M | 打开问题 |
+| Ctrl + Shift + U | 打开输出 |
+| Ctrl + Shift + Y | 调试控制台 |
+| Ctrl + J | 显示/隐藏底部面板 |
+| Ctrl + B | 显示/隐藏侧边栏 |
+| Ctrl + K Z | 打开关闭禅模式 （毫无卵用） |
+| Ctrl + N | 新建文件 |
+| Ctrl + Shift + N | 新建窗口 |
+| Ctrl + W | 关闭当前文件 |
+| Ctrl + Shift + W | 关闭软件的当前窗口 |
+| Ctrl + K Ctrl + O | 打开文件夹 |
+| Ctrl + O | 打开文件 |
+| Ctrl + Shift + P | 打开命令面板 |
+| Ctrl + Shift + T | 重新打开刚关闭的编辑页面 |
+| Ctrl + \ | 右侧拆分窗口 |
 
